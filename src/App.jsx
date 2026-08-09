@@ -130,17 +130,19 @@ function App() {
   return (
     <>
       <a className="skip-link" href="#main">Skip to content</a>
-      <div className="announcement"><span>{siteConfig.announcement}</span></div>
-      <header className="site-header">
-        <a className="brand" href="#top" aria-label="Bewraped home"><img src="./images/bewraped-logo.jpeg" alt="Bewraped" /></a>
-        <button className="nav-toggle" aria-label="Toggle navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><Icon name={menuOpen ? 'close' : 'menu'} /></button>
-        <nav className={menuOpen ? 'site-nav is-open' : 'site-nav'} aria-label="Main navigation">
-          <a href="#menu" onClick={closeMenu}>Menu</a>
-          <a href="#why" onClick={closeMenu}>Why Bewraped?</a>
-          <a href="#contact" onClick={closeMenu}>Contact</a>
-          <a className="nav-order" href={siteConfig.orderUrl} onClick={closeMenu}>Order now <Icon name="arrow" size={16} /></a>
-        </nav>
-      </header>
+      <div className="site-chrome">
+        <div className="announcement"><span>{siteConfig.announcement}</span></div>
+        <header className="site-header">
+          <a className="brand" href="#top" aria-label="Bewraped home"><img src="./images/bewraped-logo.jpeg" alt="Bewraped" /></a>
+          <button className="nav-toggle" aria-label="Toggle navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><Icon name={menuOpen ? 'close' : 'menu'} /></button>
+          <nav className={menuOpen ? 'site-nav is-open' : 'site-nav'} aria-label="Main navigation">
+            <a href="#menu" onClick={closeMenu}>Menu</a>
+            <a href="#why" onClick={closeMenu}>Why Bewraped?</a>
+            <a href="#contact" onClick={closeMenu}>Contact</a>
+            <a className="nav-order" href={siteConfig.orderUrl} onClick={closeMenu}>Order now <Icon name="arrow" size={16} /></a>
+          </nav>
+        </header>
+      </div>
 
       <main id="main">
         <section id="top" className="hero" style={{ '--hero-position': slide.position, backgroundImage: `linear-gradient(90deg, rgba(29, 7, 8, .94) 0%, rgba(45, 9, 10, .78) 38%, rgba(45, 9, 10, .06) 70%), url(${HERO_IMAGE})` }}>
