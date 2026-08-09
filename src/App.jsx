@@ -86,7 +86,6 @@ function getPageFromHash() {
 
 function App() {
   const mainRef = useRef(null)
-  const cursorGlowRef = useRef(null)
   const [activeSlide, setActiveSlide] = useState(0)
   const [menuOpen, setMenuOpen] = useState(false)
   const [page, setPage] = useState(getPageFromHash)
@@ -121,27 +120,6 @@ function App() {
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [page])
-
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce), (pointer: coarse)').matches) return undefined
-
-    const glow = cursorGlowRef.current
-    const moveX = gsap.quickTo(glow, 'x', { duration: .45, ease: 'power3.out' })
-    const moveY = gsap.quickTo(glow, 'y', { duration: .45, ease: 'power3.out' })
-    const followCursor = (event) => {
-      moveX(event.clientX - 130)
-      moveY(event.clientY - 130)
-      gsap.to(glow, { autoAlpha: .72, duration: .2, overwrite: 'auto' })
-    }
-    const hideGlow = () => gsap.to(glow, { autoAlpha: 0, duration: .3, overwrite: 'auto' })
-
-    window.addEventListener('pointermove', followCursor, { passive: true })
-    window.addEventListener('blur', hideGlow)
-    return () => {
-      window.removeEventListener('pointermove', followCursor)
-      window.removeEventListener('blur', hideGlow)
-    }
-  }, [])
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce), (pointer: coarse)').matches) return undefined
@@ -206,7 +184,6 @@ function App() {
   return (
     <>
       <a className="skip-link" href="#main">Skip to content</a>
-      <div className="cursor-glow" ref={cursorGlowRef} aria-hidden="true" />
       <div className="site-chrome">
         <div className="announcement"><span>{siteConfig.announcement}</span></div>
         <header className="site-header">
