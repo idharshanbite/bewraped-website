@@ -34,6 +34,7 @@ button { font: inherit; }
 
 /* A hidden field catches basic automated form spam without affecting visitors. */
 .form-trap { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.subscribe-form input:focus { box-shadow: none; }
 .subscribe-doodle--coffee { top: 22%; right: 15%; animation-delay: -3s; }
 .subscribe-doodle--matcha { bottom: 20%; left: 21%; color: #d9efba; animation-delay: -2.1s; }
 .subscribe-doodle--ube { top: 8%; right: 34%; color: #dfc6f8; animation-delay: -3.8s; }
