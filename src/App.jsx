@@ -17,6 +17,7 @@ function Icon({ name, size = 24 }) {
     heart: <path d="M20.8 8.1c0 5.1-8.8 10.5-8.8 10.5S3.2 13.2 3.2 8.1a4.5 4.5 0 0 1 8-2.8l.8.9.8-.9a4.5 4.5 0 0 1 8 2.8Z" />,
     arrow: <><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>,
     arrowLeft: <><path d="M19 12H5" /><path d="m11 18-6-6 6-6" /></>,
+    arrowDown: <><path d="M12 4v16" /><path d="m6 14 6 6 6-6" /></>,
     menu: <><path d="M4 7h16M4 12h16M4 17h16" /></>,
     close: <><path d="m6 6 12 12M18 6 6 18" /></>,
     coffeeBean: <><path d="M19.2 4.8c-4-3.9-10.4-2.1-13.3 2.2-2.9 4.4-1.5 10.6 2.7 12.6 4.1 2 9.4-.5 11.3-5 1.8-4.3 1.2-7.5-.7-9.7Z" /><path d="M7 17c2.2-3.3 4.9-6.5 8.9-9.3" /></>,
@@ -239,6 +240,10 @@ function App() {
     window.history.replaceState(null, '', '#/home#about-details')
     window.requestAnimationFrame(() => document.getElementById('about-details')?.scrollIntoView({ behavior: 'smooth' }))
   }
+  const goToSubscribe = () => {
+    closeMenu()
+    document.getElementById('subscribe')?.scrollIntoView({ behavior: 'smooth' })
+  }
   const openContactForm = () => {
     setContactStatus('idle')
     setContactFormOpen(true)
@@ -353,7 +358,7 @@ function App() {
 
         {page === 'contact' && <section className="visit-section contact-page"><div className="visit-section__content"><p className="eyebrow">Say hello</p><h1>Ready when you are.</h1><p>Leave your name, contact number, and email. The Bewraped team will get back to you soon.</p><button className="button button--cream" type="button" onClick={openContactForm}>Get in touch <Icon name="arrow" size={18} /></button></div></section>}
 
-        <section className="subscribe-band" aria-labelledby="subscribe-title">
+        <section className="subscribe-band" id="subscribe" aria-labelledby="subscribe-title">
           <div className="subscribe-band__image" aria-hidden="true" />
           <div className="subscribe-band__doodles" aria-hidden="true">
             <span className="subscribe-doodle subscribe-doodle--sparkle"><Icon name="sparkle" size={58} /></span>
@@ -371,6 +376,8 @@ function App() {
           </div>
         </section>
       </main>
+
+      <button className="subscribe-jump" type="button" onClick={goToSubscribe} aria-label="Scroll to subscribe"><span>Subscribe</span><Icon name="arrowDown" size={19} /></button>
 
       <footer id="contact" className="site-footer"><div className="footer-brand"><a className="footer-brand__link" href="#/home" onClick={goHome}><img className="footer-sticker" src="./images/bewraped-sticker.webp" alt="Bewraped sticker" /></a><p>Fresh bubble waffles and small-batch brews, made for your good moments.</p></div><div className="footer-links"><h2>Explore</h2><a href="#/home" onClick={goHome}>Home</a><a href="#/home#about-details" onClick={goToAbout}>About Bewraped</a><a href="#/menu">Menu</a><a href="#/contact">Contact</a></div><div className="footer-connect"><h2>Say hello</h2><a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a><span>{siteConfig.location}</span></div><div className="footer-socials"><h2>Social media</h2><div className="social-links"><SocialLink icon="instagram" label="Instagram" href={siteConfig.socialLinks.instagram} /><SocialLink icon="tiktok" label="TikTok" href={siteConfig.socialLinks.tiktok} /><SocialLink icon="linkedin" label="LinkedIn" href={siteConfig.socialLinks.linkedin} /><SocialLink icon="whatsapp" label="WhatsApp" href={siteConfig.socialLinks.whatsapp} /></div></div><div className="footer-note">Copyright {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
       {contactFormOpen && <ContactModal onClose={closeContactForm} formValues={contactForm} onChange={updateContactForm} onSubmit={submitContactForm} status={contactStatus} />}
