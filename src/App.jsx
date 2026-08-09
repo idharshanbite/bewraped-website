@@ -125,6 +125,7 @@ function App() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [menuOpen, setMenuOpen] = useState(false)
   const [page, setPage] = useState(getPageFromHash)
+  const [activeSection, setActiveSection] = useState(() => window.location.hash.toLowerCase().includes('#about-details') ? 'about' : '')
   const [contactFormOpen, setContactFormOpen] = useState(false)
   const [contactStatus, setContactStatus] = useState('idle')
   const [contactForm, setContactForm] = useState({ name: '', contact: '', email: '', website: '' })
@@ -148,14 +149,26 @@ function App() {
 
   useEffect(() => {
     const updatePage = () => {
-      setPage(getPageFromHash())
+      const nextPage = getPageFromHash()
+      if (nextPage === 'about') {
+        window.location.replace('#/home#about-details')
+        return
+      }
+      setPage(nextPage)
+      setActiveSection(nextPage === 'home' && window.location.hash.toLowerCase().includes('#about-details') ? 'about' : '')
       setMenuOpen(false)
     }
+    updatePage()
     window.addEventListener('hashchange', updatePage)
     return () => window.removeEventListener('hashchange', updatePage)
   }, [])
 
   useEffect(() => {
+    const section = window.location.hash.split('#')[1]
+    if (page === 'home' && section === 'about-details') {
+      window.requestAnimationFrame(() => document.getElementById('about-details')?.scrollIntoView({ behavior: 'smooth' }))
+      return
+    }
     window.scrollTo(0, 0)
   }, [page])
 
@@ -195,7 +208,19 @@ function App() {
   const closeMenu = () => setMenuOpen(false)
   const goHome = () => {
     closeMenu()
+    setActiveSection('')
     if (page === 'home') window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }))
+  }
+  const goToAbout = (event) => {
+    event.preventDefault()
+    closeMenu()
+    setActiveSection('about')
+    if (page !== 'home') {
+      window.location.hash = '#/home#about-details'
+      return
+    }
+    window.history.replaceState(null, '', '#/home#about-details')
+    window.requestAnimationFrame(() => document.getElementById('about-details')?.scrollIntoView({ behavior: 'smooth' }))
   }
   const openContactForm = () => {
     setContactStatus('idle')
@@ -228,6 +253,7 @@ function App() {
     setSubscribeEmail(event.target.value)
     if (subscribeStatus !== 'idle') setSubscribeStatus('idle')
   }
+  const isAboutSection = page === 'home' && activeSection === 'about'
   const submitSubscribeForm = async (event) => {
     event.preventDefault()
     if (!siteConfig.contactFormEndpoint) {
@@ -260,8 +286,8 @@ function App() {
           <a className="brand" href="#/home" aria-label="Bewraped home" onClick={goHome}><BrandMark /></a>
           <button className="nav-toggle" aria-label="Toggle navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><Icon name={menuOpen ? 'close' : 'menu'} /></button>
           <nav className={menuOpen ? 'site-nav is-open' : 'site-nav'} aria-label="Main navigation">
-            <a className={page === 'home' ? 'is-active' : undefined} href="#/home" aria-current={page === 'home' ? 'page' : undefined} onClick={closeMenu}>Home</a>
-            <a className={page === 'about' ? 'is-active' : undefined} href="#/about" aria-current={page === 'about' ? 'page' : undefined} onClick={closeMenu}>About</a>
+            <a className={page === 'home' && !isAboutSection ? 'is-active' : undefined} href="#/home" aria-current={page === 'home' && !isAboutSection ? 'page' : undefined} onClick={goHome}>Home</a>
+            <a className={isAboutSection ? 'is-active' : undefined} href="#/home#about-details" aria-current={isAboutSection ? 'page' : undefined} onClick={goToAbout}>About</a>
             <a className={page === 'menu' ? 'is-active' : undefined} href="#/menu" aria-current={page === 'menu' ? 'page' : undefined} onClick={closeMenu}>Menu</a>
             <a className={page === 'contact' ? 'is-active' : undefined} href="#/contact" aria-current={page === 'contact' ? 'page' : undefined} onClick={closeMenu}>Contact</a>
             <a className="nav-order" href={siteConfig.orderUrl} onClick={closeMenu}>Order now <Icon name="arrow" size={16} /></a>
@@ -296,14 +322,12 @@ function App() {
             </div>
           </section>
 
-        </>}
-
-        {page === 'about' && <>
-          <section className="page-intro section"><p className="eyebrow eyebrow--red">About Bewraped</p><h1>Sweet moments, thoughtfully made.</h1><p>Bewraped is all about fresh bubble waffles, small-batch brews, and easy treats made for the people you share them with.</p></section>
+          <section className="page-intro section about-home" id="about-details" aria-labelledby="about-title"><p className="eyebrow eyebrow--red">About Bewraped</p><h2 id="about-title">Sweet moments, thoughtfully made.</h2><p>Bewraped is all about fresh bubble waffles, small-batch brews, and easy treats made for the people you share them with.</p></section>
           <section className="why section" aria-labelledby="why-title">
             <div className="section-heading section-heading--split"><div><p className="eyebrow eyebrow--red">Why Bewraped?</p><h2 id="why-title">Good mood food, wrapped up right.</h2></div><p>We keep the menu simple: fresh waffle batter, thoughtful toppings, and brews that make you want to stay a little longer.</p></div>
             <div className="reason-grid">{reasons.map((reason) => <article className="reason" key={reason.title}><span><Icon name={reason.icon} size={26} /></span><h3>{reason.title}</h3><p>{reason.copy}</p></article>)}</div>
           </section>
+
         </>}
 
         {page === 'menu' && <section className="menu-section section" aria-label="Bewraped menu">
@@ -331,7 +355,7 @@ function App() {
         </section>
       </main>
 
-      <footer id="contact" className="site-footer"><div className="footer-brand"><a className="footer-brand__link" href="#/home" onClick={goHome}><img className="footer-sticker" src="./images/bewraped-sticker.webp" alt="Bewraped sticker" /></a><p>Fresh bubble waffles and small-batch brews, made for your good moments.</p></div><div className="footer-links"><h2>Explore</h2><a href="#/home" onClick={goHome}>Home</a><a href="#/about">About Bewraped</a><a href="#/menu">Menu</a><a href="#/contact">Contact</a></div><div className="footer-connect"><h2>Say hello</h2><a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a><span>{siteConfig.location}</span></div><div className="footer-socials"><h2>Social media</h2><div className="social-links"><SocialLink icon="instagram" label="Instagram" href={siteConfig.socialLinks.instagram} /><SocialLink icon="tiktok" label="TikTok" href={siteConfig.socialLinks.tiktok} /><SocialLink icon="linkedin" label="LinkedIn" href={siteConfig.socialLinks.linkedin} /><SocialLink icon="whatsapp" label="WhatsApp" href={siteConfig.socialLinks.whatsapp} /></div></div><div className="footer-note">Copyright {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
+      <footer id="contact" className="site-footer"><div className="footer-brand"><a className="footer-brand__link" href="#/home" onClick={goHome}><img className="footer-sticker" src="./images/bewraped-sticker.webp" alt="Bewraped sticker" /></a><p>Fresh bubble waffles and small-batch brews, made for your good moments.</p></div><div className="footer-links"><h2>Explore</h2><a href="#/home" onClick={goHome}>Home</a><a href="#/home#about-details" onClick={goToAbout}>About Bewraped</a><a href="#/menu">Menu</a><a href="#/contact">Contact</a></div><div className="footer-connect"><h2>Say hello</h2><a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a><span>{siteConfig.location}</span></div><div className="footer-socials"><h2>Social media</h2><div className="social-links"><SocialLink icon="instagram" label="Instagram" href={siteConfig.socialLinks.instagram} /><SocialLink icon="tiktok" label="TikTok" href={siteConfig.socialLinks.tiktok} /><SocialLink icon="linkedin" label="LinkedIn" href={siteConfig.socialLinks.linkedin} /><SocialLink icon="whatsapp" label="WhatsApp" href={siteConfig.socialLinks.whatsapp} /></div></div><div className="footer-note">Copyright {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
       {contactFormOpen && <ContactModal onClose={closeContactForm} formValues={contactForm} onChange={updateContactForm} onSubmit={submitContactForm} status={contactStatus} />}
     </>
   )
