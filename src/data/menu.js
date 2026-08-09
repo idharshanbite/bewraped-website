@@ -7,7 +7,7 @@ export const siteConfig = {
   phone: 'Add your WhatsApp number',
   instagram: 'Add your Instagram handle',
   location: 'Add your location',
-  orderUrl: '#contact',
+  orderUrl: '#/contact',
   contactFormEndpoint: 'https://script.google.com/macros/s/AKfycbw1utTv1mj-bbqUqgSR6T85QvU1C59qn-BAjWfhbFRjxT8Ze0dOD0QrsAMEBoWS8GM/exec',
 }
 
@@ -17,7 +17,7 @@ export const heroSlides = [
     title: 'Waffles worth unwrapping.',
     description: 'Golden bubble waffles, made fresh and packed with the toppings you love.',
     cta: 'Explore signature waffles',
-    target: '#waffles',
+    target: '#/menu',
     position: 'right center',
   },
   {
@@ -25,7 +25,7 @@ export const heroSlides = [
     title: 'A little cloud in every cup.',
     description: 'Our Cloud Brew is smooth, creamy, and ready to slow down your day.',
     cta: 'See coffee menu',
-    target: '#coffee',
+    target: '#/menu',
     position: '80% center',
   },
   {
@@ -33,7 +33,7 @@ export const heroSlides = [
     title: 'Cold brew, your way.',
     description: 'Deep coffee flavour, ice-cold refreshment, and your favourite waffle on the side.',
     cta: 'Choose a drink',
-    target: '#coffee',
+    target: '#/menu',
     position: '75% center',
   },
   {
@@ -41,7 +41,7 @@ export const heroSlides = [
     title: 'Fresh flavours. Zero fuss.',
     description: 'Pick your base, choose your toppings, and let us wrap up something special.',
     cta: 'View the menu',
-    target: '#menu',
+    target: '#/menu',
     position: 'right 35%',
   },
   {
@@ -49,15 +49,15 @@ export const heroSlides = [
     title: 'Sweet, warm, Bewraped.',
     description: 'Whether it is a quick treat or a coffee catch-up, there is always room for one more bite.',
     cta: 'Find us',
-    target: '#contact',
+    target: '#/contact',
     position: '70% center',
   },
 ]
 
 export const categories = [
-  { icon: 'waffle', title: 'Bubble Waffles', copy: 'Golden outside, soft inside.', target: '#waffles' },
-  { icon: 'cloud', title: 'Cloud Brew', copy: 'Creamy, airy coffee comfort.', target: '#coffee' },
-  { icon: 'cold', title: 'Cold Brew', copy: 'Bold coffee, served chilled.', target: '#coffee' },
+  { icon: 'waffle', title: 'Bubble Waffles', copy: 'Golden outside, soft inside.', target: '#/menu' },
+  { icon: 'cloud', title: 'Cloud Brew', copy: 'Creamy, airy coffee comfort.', target: '#/menu' },
+  { icon: 'cold', title: 'Cold Brew', copy: 'Bold coffee, served chilled.', target: '#/menu' },
 ]
 
 export const reasons = [
