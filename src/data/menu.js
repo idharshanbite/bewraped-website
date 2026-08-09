@@ -8,6 +8,7 @@ export const siteConfig = {
   instagram: 'Add your Instagram handle',
   location: 'Add your location',
   orderUrl: '#contact',
+  contactFormEndpoint: 'https://script.google.com/macros/s/AKfycbw1utTv1mj-bbqUqgSR6T85QvU1C59qn-BAjWfhbFRjxT8Ze0dOD0QrsAMEBoWS8GM/exec',
 }
 
 export const heroSlides = [
@@ -73,10 +74,10 @@ export const menuSections = [
     title: 'Pick a favourite. Make it yours.',
     description: 'A starting menu you can update anytime in this file.',
     items: [
-      { name: 'Strawberry Cloud', description: 'Fresh strawberry, cream and chocolate drizzle.', price: 'Rs. —', position: '80% center' },
-      { name: 'Chocolate Crush', description: 'Chocolate sauce, crunchy crumbs and a creamy finish.', price: 'Rs. —', position: '70% center' },
-      { name: 'Berry Bliss', description: 'Berry topping with a bright, sweet finish.', price: 'Rs. —', position: '90% center' },
-      { name: 'Classic Wrap', description: 'Your choice of sauce and toppings, wrapped fresh.', price: 'Rs. —', position: '75% center' },
+      { name: 'Strawberry Cloud', description: 'Fresh strawberry, cream and chocolate drizzle.', price: 'Rs. â€”', position: '80% center' },
+      { name: 'Chocolate Crush', description: 'Chocolate sauce, crunchy crumbs and a creamy finish.', price: 'Rs. â€”', position: '70% center' },
+      { name: 'Berry Bliss', description: 'Berry topping with a bright, sweet finish.', price: 'Rs. â€”', position: '90% center' },
+      { name: 'Classic Wrap', description: 'Your choice of sauce and toppings, wrapped fresh.', price: 'Rs. â€”', position: '75% center' },
     ],
   },
   {
@@ -85,10 +86,11 @@ export const menuSections = [
     title: 'Brewed to pair beautifully.',
     description: 'Keep this list simple or expand it with seasonal specials later.',
     items: [
-      { name: 'Cloud Brew', description: 'Cold coffee topped with a silky cloud of cream.', price: 'Rs. —', position: '100% center' },
-      { name: 'Classic Cold Brew', description: 'Slow-steeped, smooth and seriously refreshing.', price: 'Rs. —', position: '100% center' },
-      { name: 'Mocha Cold Brew', description: 'Cold brew with a chocolatey twist.', price: 'Rs. —', position: '100% center' },
-      { name: 'Vanilla Cloud', description: 'A gentle vanilla finish for an extra-soft sip.', price: 'Rs. —', position: '100% center' },
+      { name: 'Cloud Brew', description: 'Cold coffee topped with a silky cloud of cream.', price: 'Rs. â€”', position: '100% center' },
+      { name: 'Classic Cold Brew', description: 'Slow-steeped, smooth and seriously refreshing.', price: 'Rs. â€”', position: '100% center' },
+      { name: 'Mocha Cold Brew', description: 'Cold brew with a chocolatey twist.', price: 'Rs. â€”', position: '100% center' },
+      { name: 'Vanilla Cloud', description: 'A gentle vanilla finish for an extra-soft sip.', price: 'Rs. â€”', position: '100% center' },
     ],
   },
 ]
+
