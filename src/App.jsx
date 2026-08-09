@@ -1,0 +1,115 @@
+import { useEffect, useState } from 'react'
+import { categories, heroSlides, menuSections, reasons, siteConfig } from './data/menu'
+
+const HERO_IMAGE = './images/hero-waffles.png'
+
+function Icon({ name, size = 24 }) {
+  const shared = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }
+  const paths = {
+    waffle: <><rect x="4" y="4" width="16" height="16" rx="4" /><path d="m5.5 8 13 8M12 4v16M5.5 16l13-8" /></>,
+    cloud: <><path d="M7 18.5h10a4 4 0 0 0 .8-7.9A5.8 5.8 0 0 0 7.1 9.2 4.7 4.7 0 0 0 7 18.5Z" /><path d="M12 3v3M5.5 5.5l2.1 2.1M18.5 5.5l-2.1 2.1" /></>,
+    cold: <><path d="M8 3h8l-1 18H9L8 3Z" /><path d="M7 7h10M10 11h4M11 3V1" /><path d="M6 21h12" /></>,
+    sparkle: <><path d="m12 3 1.4 5.6L19 10l-5.6 1.4L12 17l-1.4-5.6L5 10l5.6-1.4L12 3Z" /><path d="m19 17 .6 2.4L22 20l-2.4.6L19 23l-.6-2.4L16 20l2.4-.6L19 17Z" /></>,
+    gift: <><rect x="3" y="8" width="18" height="13" rx="2" /><path d="M12 8v13M3 12h18M12 8H7.5a2.3 2.3 0 1 1 2.3-2.3C9.8 7 12 8 12 8Zm0 0h4.5a2.3 2.3 0 1 0-2.3-2.3C14.2 7 12 8 12 8Z" /></>,
+    leaf: <><path d="M20 4C11 4 5 8.5 5 16c0 2.4 1.7 4 4 4 7.5 0 11-6 11-16Z" /><path d="M4 21c3.2-5.2 7-8.6 12-11" /></>,
+    heart: <path d="M20.8 8.1c0 5.1-8.8 10.5-8.8 10.5S3.2 13.2 3.2 8.1a4.5 4.5 0 0 1 8-2.8l.8.9.8-.9a4.5 4.5 0 0 1 8 2.8Z" />,
+    arrow: <><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>,
+    menu: <><path d="M4 7h16M4 12h16M4 17h16" /></>,
+    close: <><path d="m6 6 12 12M18 6 6 18" /></>,
+  }
+  return <svg {...shared}>{paths[name]}</svg>
+}
+
+function MenuCard({ item }) {
+  return (
+    <article className="menu-card">
+      <div className="menu-card__image">
+        <img src={HERO_IMAGE} alt="A Bewraped bubble waffle and cold brew" style={{ objectPosition: item.position }} />
+        <span className="menu-card__tag">Signature</span>
+      </div>
+      <div className="menu-card__body">
+        <div>
+          <h3>{item.name}</h3>
+          <p>{item.description}</p>
+        </div>
+        <div className="menu-card__bottom">
+          <strong>{item.price}</strong>
+          <a href={siteConfig.orderUrl} aria-label={`Order ${item.name}`}>Order <Icon name="arrow" size={16} /></a>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function App() {
+  const [activeSlide, setActiveSlide] = useState(0)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const slide = heroSlides[activeSlide]
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setActiveSlide((current) => (current + 1) % heroSlides.length), 5500)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  const selectSlide = (index) => setActiveSlide((index + heroSlides.length) % heroSlides.length)
+  const closeMenu = () => setMenuOpen(false)
+
+  return (
+    <>
+      <a className="skip-link" href="#main">Skip to content</a>
+      <div className="announcement"><span>{siteConfig.announcement}</span></div>
+      <header className="site-header">
+        <a className="brand" href="#top" aria-label="Bewraped home"><img src="./images/bewraped-logo.jpeg" alt="Bewraped" /></a>
+        <button className="nav-toggle" aria-label="Toggle navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><Icon name={menuOpen ? 'close' : 'menu'} /></button>
+        <nav className={menuOpen ? 'site-nav is-open' : 'site-nav'} aria-label="Main navigation">
+          <a href="#menu" onClick={closeMenu}>Menu</a>
+          <a href="#why" onClick={closeMenu}>Why Bewraped?</a>
+          <a href="#contact" onClick={closeMenu}>Contact</a>
+          <a className="nav-order" href={siteConfig.orderUrl} onClick={closeMenu}>Order now <Icon name="arrow" size={16} /></a>
+        </nav>
+      </header>
+
+      <main id="main">
+        <section id="top" className="hero" style={{ '--hero-position': slide.position, backgroundImage: `linear-gradient(90deg, rgba(29, 7, 8, .94) 0%, rgba(45, 9, 10, .78) 38%, rgba(45, 9, 10, .06) 70%), url(${HERO_IMAGE})` }}>
+          <div className="hero__content">
+            <p className="eyebrow">{slide.eyebrow}</p>
+            <h1>{slide.title}</h1>
+            <p className="hero__copy">{slide.description}</p>
+            <a className="button button--cream" href={slide.target}>{slide.cta} <Icon name="arrow" size={18} /></a>
+          </div>
+          <div className="hero__controls" aria-label="Hero slides">
+            <button onClick={() => selectSlide(activeSlide - 1)} aria-label="Previous slide">←</button>
+            <div className="hero__dots">
+              {heroSlides.map((heroSlide, index) => <button key={heroSlide.title} className={index === activeSlide ? 'is-active' : ''} onClick={() => selectSlide(index)} aria-label={`Show slide ${index + 1}`} aria-current={index === activeSlide ? 'true' : undefined} />)}
+            </div>
+            <button onClick={() => selectSlide(activeSlide + 1)} aria-label="Next slide">→</button>
+          </div>
+        </section>
+
+        <section className="intro section" aria-labelledby="intro-title">
+          <p className="eyebrow eyebrow--red">Your comfort order</p>
+          <h2 id="intro-title">One little stop. A lot to love.</h2>
+          <p className="section-lead">Start with a warm bubble waffle, then find the brew that matches your mood.</p>
+          <div className="category-grid">
+            {categories.map((category) => <a className="category-card" href={category.target} key={category.title}><span className="category-card__icon"><Icon name={category.icon} size={34} /></span><h3>{category.title}</h3><p>{category.copy}</p><span className="category-card__link">Explore <Icon name="arrow" size={16} /></span></a>)}
+          </div>
+        </section>
+
+        <section id="why" className="why section" aria-labelledby="why-title">
+          <div className="section-heading section-heading--split"><div><p className="eyebrow eyebrow--red">Why Bewraped?</p><h2 id="why-title">Good mood food, wrapped up right.</h2></div><p>We keep the menu simple: fresh waffle batter, thoughtful toppings, and brews that make you want to stay a little longer.</p></div>
+          <div className="reason-grid">{reasons.map((reason) => <article className="reason" key={reason.title}><span><Icon name={reason.icon} size={26} /></span><h3>{reason.title}</h3><p>{reason.copy}</p></article>)}</div>
+        </section>
+
+        <section id="menu" className="menu-section section" aria-label="Bewraped menu">
+          {menuSections.map((section) => <div className="menu-group" id={section.id} key={section.id}><div className="section-heading"><div><p className="eyebrow eyebrow--red">{section.eyebrow}</p><h2>{section.title}</h2></div><p>{section.description}</p></div><div className="menu-grid">{section.items.map((item) => <MenuCard item={item} key={item.name} />)}</div></div>)}
+        </section>
+
+        <section className="visit-section"><div className="visit-section__content"><p className="eyebrow">Your next treat is waiting</p><h2>Ready when you are.</h2><p>Update the contact details below, then let your customers know exactly where to find you.</p><a className="button button--cream" href="#contact">Get in touch <Icon name="arrow" size={18} /></a></div></section>
+      </main>
+
+      <footer id="contact" className="site-footer"><div className="footer-brand"><img src="./images/bewraped-logo.jpeg" alt="Bewraped" /><p>Bubble waffles, Cloud Brew and Cold Brew made for good moments.</p></div><div><h2>Visit or order</h2><a href={siteConfig.orderUrl}>Place an order</a><span>{siteConfig.location}</span></div><div><h2>Say hello</h2><span>{siteConfig.phone}</span><span>{siteConfig.email}</span><span>{siteConfig.instagram}</span></div><div className="footer-note">© {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
+    </>
+  )
+}
+
+export default App
