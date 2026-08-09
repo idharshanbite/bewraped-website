@@ -1,0 +1,94 @@
+// This is the only file you need to edit for most future menu, price, and contact updates.
+
+export const siteConfig = {
+  brand: 'Bewraped',
+  announcement: 'Freshly made bubble waffles and small-batch brews, made for your good moments.',
+  email: 'Add your email address',
+  phone: 'Add your WhatsApp number',
+  instagram: 'Add your Instagram handle',
+  location: 'Add your location',
+  orderUrl: '#contact',
+}
+
+export const heroSlides = [
+  {
+    eyebrow: 'Made for the moment',
+    title: 'Waffles worth unwrapping.',
+    description: 'Golden bubble waffles, made fresh and packed with the toppings you love.',
+    cta: 'Explore signature waffles',
+    target: '#waffles',
+    position: 'right center',
+  },
+  {
+    eyebrow: 'The Bewraped way',
+    title: 'A little cloud in every cup.',
+    description: 'Our Cloud Brew is smooth, creamy, and ready to slow down your day.',
+    cta: 'See coffee menu',
+    target: '#coffee',
+    position: '80% center',
+  },
+  {
+    eyebrow: 'Cold, bold, beautiful',
+    title: 'Cold brew, your way.',
+    description: 'Deep coffee flavour, ice-cold refreshment, and your favourite waffle on the side.',
+    cta: 'Choose a drink',
+    target: '#coffee',
+    position: '75% center',
+  },
+  {
+    eyebrow: 'Share something sweet',
+    title: 'Fresh flavours. Zero fuss.',
+    description: 'Pick your base, choose your toppings, and let us wrap up something special.',
+    cta: 'View the menu',
+    target: '#menu',
+    position: 'right 35%',
+  },
+  {
+    eyebrow: 'Your new comfort order',
+    title: 'Sweet, warm, Bewraped.',
+    description: 'Whether it is a quick treat or a coffee catch-up, there is always room for one more bite.',
+    cta: 'Find us',
+    target: '#contact',
+    position: '70% center',
+  },
+]
+
+export const categories = [
+  { icon: 'waffle', title: 'Bubble Waffles', copy: 'Golden outside, soft inside.', target: '#waffles' },
+  { icon: 'cloud', title: 'Cloud Brew', copy: 'Creamy, airy coffee comfort.', target: '#coffee' },
+  { icon: 'cold', title: 'Cold Brew', copy: 'Bold coffee, served chilled.', target: '#coffee' },
+]
+
+export const reasons = [
+  { icon: 'sparkle', title: 'Made fresh', copy: 'Every waffle is cooked to order for that just-made warmth.' },
+  { icon: 'gift', title: 'Wrapped with care', copy: 'Easy to carry, easy to share, and always a little special.' },
+  { icon: 'leaf', title: 'Good ingredients', copy: 'Simple, quality ingredients with flavours that speak for themselves.' },
+  { icon: 'heart', title: 'Made for your moments', copy: 'A comfort order for catch-ups, celebrations, and everything in between.' },
+]
+
+export const menuSections = [
+  {
+    id: 'waffles',
+    eyebrow: 'Signature waffles',
+    title: 'Pick a favourite. Make it yours.',
+    description: 'A starting menu you can update anytime in this file.',
+    items: [
+      { name: 'Strawberry Cloud', description: 'Fresh strawberry, cream and chocolate drizzle.', price: 'Rs. —', position: '80% center' },
+      { name: 'Chocolate Crush', description: 'Chocolate sauce, crunchy crumbs and a creamy finish.', price: 'Rs. —', position: '70% center' },
+      { name: 'Berry Bliss', description: 'Berry topping with a bright, sweet finish.', price: 'Rs. —', position: '90% center' },
+      { name: 'Classic Wrap', description: 'Your choice of sauce and toppings, wrapped fresh.', price: 'Rs. —', position: '75% center' },
+    ],
+  },
+  {
+    id: 'coffee',
+    eyebrow: 'Coffee menu',
+    title: 'Brewed to pair beautifully.',
+    description: 'Keep this list simple or expand it with seasonal specials later.',
+    items: [
+      { name: 'Cloud Brew', description: 'Cold coffee topped with a silky cloud of cream.', price: 'Rs. —', position: '100% center' },
+      { name: 'Classic Cold Brew', description: 'Slow-steeped, smooth and seriously refreshing.', price: 'Rs. —', position: '100% center' },
+      { name: 'Mocha Cold Brew', description: 'Cold brew with a chocolatey twist.', price: 'Rs. —', position: '100% center' },
+      { name: 'Vanilla Cloud', description: 'A gentle vanilla finish for an extra-soft sip.', price: 'Rs. —', position: '100% center' },
+    ],
+  },
+]
