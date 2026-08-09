@@ -18,6 +18,10 @@ function Icon({ name, size = 24 }) {
     arrowLeft: <><path d="M19 12H5" /><path d="m11 18-6-6 6-6" /></>,
     menu: <><path d="M4 7h16M4 12h16M4 17h16" /></>,
     close: <><path d="m6 6 12 12M18 6 6 18" /></>,
+    coffeeBean: <><path d="M19.2 4.8c-4-3.9-10.4-2.1-13.3 2.2-2.9 4.4-1.5 10.6 2.7 12.6 4.1 2 9.4-.5 11.3-5 1.8-4.3 1.2-7.5-.7-9.7Z" /><path d="M7 17c2.2-3.3 4.9-6.5 8.9-9.3" /></>,
+    bubbles: <><circle cx="7" cy="7" r="2.5" /><circle cx="16.5" cy="6.5" r="3.5" /><circle cx="14" cy="16" r="4.5" /><circle cx="5.5" cy="17.5" r="1.5" /></>,
+    matcha: <><path d="M5 10h14l-1.2 9H6.2L5 10Z" /><path d="M4 10h16M9 6.5c1.7-2.6 4.3-3.3 6.6-2.8-.5 2.4-2.6 4.5-5.5 4.2" /><path d="M12 8.8c.1-1.6.9-3.1 2.1-4.3" /></>,
+    ube: <><path d="M6.2 9.1c.5-3.5 3.6-5.7 7.2-5.1 3.5.5 5.7 3.8 5.1 7.3-.5 3.2-3.2 5.6-6.4 5.2-3-.3-5.1-3-4.7-6 .3-2.5 2.6-4.1 4.9-3.7" /><path d="M5.5 14.5c-2.1 1-3.1 3.5-2.1 5.6M17 16.5c1.3 1.7 3.8 2 5.5.8" /><path d="M10.2 11.3c1.3-1 3.1-.5 3.8.9.7 1.4.1 3.1-1.3 3.8" /></>,
   }
   return <svg {...shared}>{paths[name]}</svg>
 }
@@ -70,6 +74,7 @@ function ContactModal({ onClose, formValues, onChange, onSubmit, status }) {
               <label htmlFor="contact-name">Name<input id="contact-name" name="name" autoComplete="name" value={formValues.name} onChange={onChange} required /></label>
               <label htmlFor="contact-number">Contact number<input id="contact-number" name="contact" type="tel" autoComplete="tel" value={formValues.contact} onChange={onChange} required /></label>
               <label htmlFor="contact-email">Email<input id="contact-email" name="email" type="email" autoComplete="email" value={formValues.email} onChange={onChange} required /></label>
+              <label className="form-trap" aria-hidden="true">Website<input name="website" tabIndex="-1" autoComplete="off" value={formValues.website} onChange={onChange} /></label>
               {status === 'configuration' && <p className="contact-form__notice" role="alert">The email connection is being set up. Please try again shortly.</p>}
               {status === 'error' && <p className="contact-form__notice" role="alert">We could not send your details. Please try again.</p>}
               <button className="button" type="submit" disabled={isSending}>{isSending ? 'Sending...' : 'Send my details'} <Icon name="arrow" size={18} /></button>
@@ -113,7 +118,7 @@ function App() {
   const [page, setPage] = useState(getPageFromHash)
   const [contactFormOpen, setContactFormOpen] = useState(false)
   const [contactStatus, setContactStatus] = useState('idle')
-  const [contactForm, setContactForm] = useState({ name: '', contact: '', email: '' })
+  const [contactForm, setContactForm] = useState({ name: '', contact: '', email: '', website: '' })
   const [subscribeEmail, setSubscribeEmail] = useState('')
   const [subscribeStatus, setSubscribeStatus] = useState('idle')
   const slide = heroSlides[activeSlide]
@@ -204,7 +209,7 @@ function App() {
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ ...contactForm, source: window.location.href, submittedAt: new Date().toISOString() }),
       })
-      setContactForm({ name: '', contact: '', email: '' })
+      setContactForm({ name: '', contact: '', email: '', website: '' })
       setContactStatus('success')
     } catch {
       setContactStatus('error')
@@ -228,7 +233,7 @@ function App() {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ name: subscriberName, contact: 'Newsletter subscriber', email: subscribeEmail, enquiryType: 'newsletter subscription', source: window.location.href, submittedAt: new Date().toISOString() }),
+        body: JSON.stringify({ name: subscriberName, contact: 'Newsletter subscriber', email: subscribeEmail, website: '', enquiryType: 'newsletter subscription', source: window.location.href, submittedAt: new Date().toISOString() }),
       })
       setSubscribeEmail('')
       setSubscribeStatus('success')
@@ -286,10 +291,10 @@ function App() {
             <div className="subscribe-band__image" aria-hidden="true" />
             <div className="subscribe-band__doodles" aria-hidden="true">
               <span className="subscribe-doodle subscribe-doodle--sparkle"><Icon name="sparkle" size={58} /></span>
-              <span className="subscribe-doodle subscribe-doodle--gift"><Icon name="gift" size={70} /></span>
-              <span className="subscribe-doodle subscribe-doodle--heart"><Icon name="heart" size={52} /></span>
+              <span className="subscribe-doodle subscribe-doodle--coffee"><Icon name="coffeeBean" size={70} /></span>
+              <span className="subscribe-doodle subscribe-doodle--matcha"><Icon name="matcha" size={62} /></span>
               <span className="subscribe-doodle subscribe-doodle--waffle"><Icon name="waffle" size={78} /></span>
-              <span className="subscribe-doodle subscribe-doodle--cloud"><Icon name="cloud" size={72} /></span>
+              <span className="subscribe-doodle subscribe-doodle--ube"><Icon name="ube" size={68} /></span>
             </div>
             <div className="subscribe-band__content">
               <p className="eyebrow">The Bewraped list</p>
