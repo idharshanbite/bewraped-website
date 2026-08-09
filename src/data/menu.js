@@ -3,10 +3,16 @@
 export const siteConfig = {
   brand: 'Bewraped',
   announcement: 'Freshly made bubble waffles and small-batch brews, made for your good moments.',
-  email: 'Add your email address',
-  phone: 'Add your WhatsApp number',
-  instagram: 'Add your Instagram handle',
-  location: 'Add your location',
+  email: 'bewraped.info@gmail.com',
+  phone: 'WhatsApp details coming soon',
+  instagram: 'Instagram coming soon',
+  location: 'Location details coming soon',
+  socialLinks: {
+    instagram: '',
+    tiktok: '',
+    linkedin: '',
+    whatsapp: '',
+  },
   orderUrl: '#/contact',
   contactFormEndpoint: 'https://script.google.com/macros/s/AKfycbw1utTv1mj-bbqUqgSR6T85QvU1C59qn-BAjWfhbFRjxT8Ze0dOD0QrsAMEBoWS8GM/exec',
 }
@@ -93,4 +99,3 @@ export const menuSections = [
     ],
   },
 ]
-
