@@ -122,16 +122,23 @@ function getPageFromHash() {
 
 function App() {
   const mainRef = useRef(null)
+  const wasReloaded = useRef(window.performance?.getEntriesByType('navigation').some((entry) => entry.type === 'reload')).current
   const [activeSlide, setActiveSlide] = useState(0)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [page, setPage] = useState(getPageFromHash)
-  const [activeSection, setActiveSection] = useState(() => window.location.hash.toLowerCase().includes('#about-details') ? 'about' : '')
+  const [page, setPage] = useState(() => wasReloaded ? 'home' : getPageFromHash())
+  const [activeSection, setActiveSection] = useState(() => !wasReloaded && window.location.hash.toLowerCase().includes('#about-details') ? 'about' : '')
   const [contactFormOpen, setContactFormOpen] = useState(false)
   const [contactStatus, setContactStatus] = useState('idle')
   const [contactForm, setContactForm] = useState({ name: '', contact: '', email: '', website: '' })
   const [subscribeEmail, setSubscribeEmail] = useState('')
   const [subscribeStatus, setSubscribeStatus] = useState('idle')
   const slide = heroSlides[activeSlide]
+
+  useEffect(() => {
+    if (!wasReloaded) return
+    window.history.replaceState(null, '', '#/home')
+    window.scrollTo(0, 0)
+  }, [wasReloaded])
 
   useEffect(() => {
     const timer = window.setInterval(() => setActiveSlide((current) => (current + 1) % heroSlides.length), 5500)
