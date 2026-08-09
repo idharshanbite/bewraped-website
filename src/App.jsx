@@ -41,9 +41,46 @@ function MenuCard({ item }) {
   )
 }
 
+function ContactModal({ onClose, formValues, onChange, onSubmit, status }) {
+  const isSending = status === 'submitting'
+
+  return (
+    <div className="contact-modal__backdrop" onMouseDown={onClose}>
+      <section className="contact-modal" role="dialog" aria-modal="true" aria-labelledby="contact-form-title" onMouseDown={(event) => event.stopPropagation()}>
+        <button className="contact-modal__close" type="button" aria-label="Close contact form" onClick={onClose}><Icon name="close" size={20} /></button>
+        {status === 'success' ? (
+          <div className="contact-modal__success">
+            <p className="eyebrow eyebrow--red">Message received</p>
+            <h2 id="contact-form-title">Thank you!</h2>
+            <p>We have received your details and sent a confirmation to your email. Bewraped will be in touch soon.</p>
+            <button className="button" type="button" onClick={onClose}>Done</button>
+          </div>
+        ) : (
+          <>
+            <p className="eyebrow eyebrow--red">Get in touch</p>
+            <h2 id="contact-form-title">Let's make it sweet.</h2>
+            <p className="contact-modal__intro">Leave your details and we will get back to you soon.</p>
+            <form className="contact-form" onSubmit={onSubmit}>
+              <label htmlFor="contact-name">Name<input id="contact-name" name="name" autoComplete="name" value={formValues.name} onChange={onChange} required /></label>
+              <label htmlFor="contact-number">Contact number<input id="contact-number" name="contact" type="tel" autoComplete="tel" value={formValues.contact} onChange={onChange} required /></label>
+              <label htmlFor="contact-email">Email<input id="contact-email" name="email" type="email" autoComplete="email" value={formValues.email} onChange={onChange} required /></label>
+              {status === 'configuration' && <p className="contact-form__notice" role="alert">The email connection is being set up. Please try again shortly.</p>}
+              {status === 'error' && <p className="contact-form__notice" role="alert">We could not send your details. Please try again.</p>}
+              <button className="button" type="submit" disabled={isSending}>{isSending ? 'Sending...' : 'Send my details'} <Icon name="arrow" size={18} /></button>
+            </form>
+          </>
+        )}
+      </section>
+    </div>
+  )
+}
+
 function App() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [contactFormOpen, setContactFormOpen] = useState(false)
+  const [contactStatus, setContactStatus] = useState('idle')
+  const [contactForm, setContactForm] = useState({ name: '', contact: '', email: '' })
   const slide = heroSlides[activeSlide]
 
   useEffect(() => {
@@ -51,8 +88,44 @@ function App() {
     return () => window.clearInterval(timer)
   }, [])
 
+  useEffect(() => {
+    if (!contactFormOpen) return undefined
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setContactFormOpen(false)
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [contactFormOpen])
+
   const selectSlide = (index) => setActiveSlide((index + heroSlides.length) % heroSlides.length)
   const closeMenu = () => setMenuOpen(false)
+  const openContactForm = () => {
+    setContactStatus('idle')
+    setContactFormOpen(true)
+  }
+  const closeContactForm = () => setContactFormOpen(false)
+  const updateContactForm = (event) => setContactForm((current) => ({ ...current, [event.target.name]: event.target.value }))
+  const submitContactForm = async (event) => {
+    event.preventDefault()
+    if (!siteConfig.contactFormEndpoint) {
+      setContactStatus('configuration')
+      return
+    }
+
+    setContactStatus('submitting')
+    try {
+      await fetch(siteConfig.contactFormEndpoint, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ ...contactForm, source: window.location.href, submittedAt: new Date().toISOString() }),
+      })
+      setContactForm({ name: '', contact: '', email: '' })
+      setContactStatus('success')
+    } catch {
+      setContactStatus('error')
+    }
+  }
 
   return (
     <>
@@ -78,11 +151,11 @@ function App() {
             <a className="button button--cream" href={slide.target}>{slide.cta} <Icon name="arrow" size={18} /></a>
           </div>
           <div className="hero__controls" aria-label="Hero slides">
-            <button onClick={() => selectSlide(activeSlide - 1)} aria-label="Previous slide">←</button>
+            <button onClick={() => selectSlide(activeSlide - 1)} aria-label="Previous slide">â†</button>
             <div className="hero__dots">
               {heroSlides.map((heroSlide, index) => <button key={heroSlide.title} className={index === activeSlide ? 'is-active' : ''} onClick={() => selectSlide(index)} aria-label={`Show slide ${index + 1}`} aria-current={index === activeSlide ? 'true' : undefined} />)}
             </div>
-            <button onClick={() => selectSlide(activeSlide + 1)} aria-label="Next slide">→</button>
+            <button onClick={() => selectSlide(activeSlide + 1)} aria-label="Next slide">â†’</button>
           </div>
         </section>
 
@@ -104,12 +177,14 @@ function App() {
           {menuSections.map((section) => <div className="menu-group" id={section.id} key={section.id}><div className="section-heading"><div><p className="eyebrow eyebrow--red">{section.eyebrow}</p><h2>{section.title}</h2></div><p>{section.description}</p></div><div className="menu-grid">{section.items.map((item) => <MenuCard item={item} key={item.name} />)}</div></div>)}
         </section>
 
-        <section className="visit-section"><div className="visit-section__content"><p className="eyebrow">Your next treat is waiting</p><h2>Ready when you are.</h2><p>Update the contact details below, then let your customers know exactly where to find you.</p><a className="button button--cream" href="#contact">Get in touch <Icon name="arrow" size={18} /></a></div></section>
+        <section className="visit-section"><div className="visit-section__content"><p className="eyebrow">Your next treat is waiting</p><h2>Ready when you are.</h2><p>Tell us how to reach you and we will get back to you soon.</p><button className="button button--cream" type="button" onClick={openContactForm}>Get in touch <Icon name="arrow" size={18} /></button></div></section>
       </main>
 
-      <footer id="contact" className="site-footer"><div className="footer-brand"><img src="./images/bewraped-logo.jpeg" alt="Bewraped" /><p>Bubble waffles, Cloud Brew and Cold Brew made for good moments.</p></div><div><h2>Visit or order</h2><a href={siteConfig.orderUrl}>Place an order</a><span>{siteConfig.location}</span></div><div><h2>Say hello</h2><span>{siteConfig.phone}</span><span>{siteConfig.email}</span><span>{siteConfig.instagram}</span></div><div className="footer-note">© {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
+      <footer id="contact" className="site-footer"><div className="footer-brand"><img src="./images/bewraped-logo.jpeg" alt="Bewraped" /><p>Bubble waffles, Cloud Brew and Cold Brew made for good moments.</p></div><div><h2>Visit or order</h2><a href={siteConfig.orderUrl}>Place an order</a><span>{siteConfig.location}</span></div><div><h2>Say hello</h2><span>{siteConfig.phone}</span><span>{siteConfig.email}</span><span>{siteConfig.instagram}</span></div><div className="footer-note">Â© {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
+      {contactFormOpen && <ContactModal onClose={closeContactForm} formValues={contactForm} onChange={updateContactForm} onSubmit={submitContactForm} status={contactStatus} />}
     </>
   )
 }
 
 export default App
+
