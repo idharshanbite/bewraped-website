@@ -14,6 +14,7 @@ function Icon({ name, size = 24 }) {
     leaf: <><path d="M20 4C11 4 5 8.5 5 16c0 2.4 1.7 4 4 4 7.5 0 11-6 11-16Z" /><path d="M4 21c3.2-5.2 7-8.6 12-11" /></>,
     heart: <path d="M20.8 8.1c0 5.1-8.8 10.5-8.8 10.5S3.2 13.2 3.2 8.1a4.5 4.5 0 0 1 8-2.8l.8.9.8-.9a4.5 4.5 0 0 1 8 2.8Z" />,
     arrow: <><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>,
+    arrowLeft: <><path d="M19 12H5" /><path d="m11 18-6-6 6-6" /></>,
     menu: <><path d="M4 7h16M4 12h16M4 17h16" /></>,
     close: <><path d="m6 6 12 12M18 6 6 18" /></>,
   }
@@ -153,11 +154,11 @@ function App() {
             <a className="button button--cream" href={slide.target}>{slide.cta} <Icon name="arrow" size={18} /></a>
           </div>
           <div className="hero__controls" aria-label="Hero slides">
-            <button onClick={() => selectSlide(activeSlide - 1)} aria-label="Previous slide">â†</button>
+            <button onClick={() => selectSlide(activeSlide - 1)} aria-label="Previous slide"><Icon name="arrowLeft" size={18} /></button>
             <div className="hero__dots">
               {heroSlides.map((heroSlide, index) => <button key={heroSlide.title} className={index === activeSlide ? 'is-active' : ''} onClick={() => selectSlide(index)} aria-label={`Show slide ${index + 1}`} aria-current={index === activeSlide ? 'true' : undefined} />)}
             </div>
-            <button onClick={() => selectSlide(activeSlide + 1)} aria-label="Next slide">â†’</button>
+            <button onClick={() => selectSlide(activeSlide + 1)} aria-label="Next slide"><Icon name="arrow" size={18} /></button>
           </div>
         </section>
 
@@ -182,7 +183,7 @@ function App() {
         <section className="visit-section"><div className="visit-section__content"><p className="eyebrow">Your next treat is waiting</p><h2>Ready when you are.</h2><p>Tell us how to reach you and we will get back to you soon.</p><button className="button button--cream" type="button" onClick={openContactForm}>Get in touch <Icon name="arrow" size={18} /></button></div></section>
       </main>
 
-      <footer id="contact" className="site-footer"><div className="footer-brand"><img src="./images/bewraped-logo.jpeg" alt="Bewraped" /><p>Bubble waffles, Cloud Brew and Cold Brew made for good moments.</p></div><div><h2>Visit or order</h2><a href={siteConfig.orderUrl}>Place an order</a><span>{siteConfig.location}</span></div><div><h2>Say hello</h2><span>{siteConfig.phone}</span><span>{siteConfig.email}</span><span>{siteConfig.instagram}</span></div><div className="footer-note">Â© {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
+      <footer id="contact" className="site-footer"><div className="footer-brand"><img src="./images/bewraped-logo.jpeg" alt="Bewraped" /><p>Bubble waffles, Cloud Brew and Cold Brew made for good moments.</p></div><div><h2>Visit or order</h2><a href={siteConfig.orderUrl}>Place an order</a><span>{siteConfig.location}</span></div><div><h2>Say hello</h2><span>{siteConfig.phone}</span><span>{siteConfig.email}</span><span>{siteConfig.instagram}</span></div><div className="footer-note">Copyright {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
       {contactFormOpen && <ContactModal onClose={closeContactForm} formValues={contactForm} onChange={updateContactForm} onSubmit={submitContactForm} status={contactStatus} />}
     </>
   )
