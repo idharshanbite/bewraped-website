@@ -1,0 +1,4 @@
+/* The Subscribe panel intentionally stays colour-only. */
+.subscribe-band__image {
+  display: none;
+}
