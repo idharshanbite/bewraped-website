@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { categories, heroSlides, menuSections, reasons, siteConfig } from './data/menu'
 
-const HERO_IMAGE = './images/hero-waffles.png'
+const HERO_BACKGROUND_IMAGE = './images/hero-drinks.jpg'
+const MENU_IMAGE = './images/hero-waffles.png'
 
 function Icon({ name, size = 24 }) {
   const shared = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }
@@ -43,7 +44,7 @@ function MenuCard({ item }) {
   return (
     <article className="menu-card">
       <div className="menu-card__image">
-        <img src={HERO_IMAGE} alt="A Bewraped bubble waffle and cold brew" style={{ objectPosition: item.position }} />
+        <img src={MENU_IMAGE} alt="A Bewraped bubble waffle and cold brew" style={{ objectPosition: item.position }} />
         <span className="menu-card__tag">Signature</span>
       </div>
       <div className="menu-card__body">
@@ -122,6 +123,7 @@ function getPageFromHash() {
 
 function App() {
   const mainRef = useRef(null)
+  const heroCopyRef = useRef(null)
   const wasReloaded = useRef(window.performance?.getEntriesByType('navigation').some((entry) => entry.type === 'reload')).current
   const [activeSlide, setActiveSlide] = useState(0)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -141,7 +143,15 @@ function App() {
   }, [wasReloaded])
 
   useEffect(() => {
-    const timer = window.setInterval(() => setActiveSlide((current) => (current + 1) % heroSlides.length), 5500)
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
+    const copyItems = heroCopyRef.current?.querySelectorAll('.hero-copy-motion')
+    if (!copyItems?.length) return undefined
+    const animation = gsap.fromTo(copyItems, { autoAlpha: 0, x: -28 }, { autoAlpha: 1, x: 0, duration: .58, stagger: .11, ease: 'power3.out', clearProps: 'transform' })
+    return () => animation.kill()
+  }, [activeSlide])
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setActiveSlide((current) => (current + 1) % heroSlides.length), 1500)
     return () => window.clearInterval(timer)
   }, [])
 
@@ -304,11 +314,11 @@ function App() {
 
       <main id="main" ref={mainRef}>
         {page === 'home' && <>
-          <section className="hero" style={{ '--hero-position': slide.position, backgroundImage: `linear-gradient(90deg, rgba(62, 11, 14, .86) 0%, rgba(99, 16, 19, .62) 42%, rgba(99, 16, 19, .08) 72%), url(${HERO_IMAGE})` }}>
-            <div className="hero__content">
-              <p className="eyebrow">{slide.eyebrow}</p>
-              <h1>{slide.title}</h1>
-              <p className="hero__copy">{slide.description}</p>
+          <section className="hero" style={{ backgroundImage: `linear-gradient(90deg, rgba(62, 11, 14, .86) 0%, rgba(99, 16, 19, .62) 42%, rgba(99, 16, 19, .08) 72%), url(${HERO_BACKGROUND_IMAGE})` }}>
+            <div className="hero__content" ref={heroCopyRef}>
+              <p className="eyebrow hero-copy-motion">{slide.eyebrow}</p>
+              <h1 className="hero-copy-motion">{slide.title}</h1>
+              <p className="hero__copy hero-copy-motion">{slide.description}</p>
               <a className="button button--cream" href={slide.target}>{slide.cta} <Icon name="arrow" size={18} /></a>
             </div>
             <div className="hero__controls" aria-label="Hero slides">
