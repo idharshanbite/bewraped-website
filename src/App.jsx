@@ -22,6 +22,10 @@ function Icon({ name, size = 24 }) {
   return <svg {...shared}>{paths[name]}</svg>
 }
 
+function BrandMark({ footer = false }) {
+  return <img className={footer ? 'brand-mark brand-mark--footer' : 'brand-mark'} src="./images/bewraped-wordmark-red.png" alt="Bewraped." />
+}
+
 function MenuCard({ item }) {
   return (
     <article className="menu-card">
@@ -77,6 +81,24 @@ function ContactModal({ onClose, formValues, onChange, onSubmit, status }) {
   )
 }
 
+function SubscribeForm({ email, onChange, onSubmit, status }) {
+  const isSending = status === 'submitting'
+
+  if (status === 'success') {
+    return <p className="subscribe-form__success" role="status"><span><Icon name="sparkle" size={18} /></span>You are on the list. Check your inbox for a little hello from Bewraped.</p>
+  }
+
+  return (
+    <form className="subscribe-form" onSubmit={onSubmit}>
+      <label className="sr-only" htmlFor="subscribe-email">Your email address</label>
+      <input id="subscribe-email" name="email" type="email" autoComplete="email" placeholder="Your email address" value={email} onChange={onChange} required />
+      <button className="button button--gold" type="submit" disabled={isSending}>{isSending ? 'Joining...' : 'Subscribe'} <Icon name="arrow" size={18} /></button>
+      {status === 'configuration' && <p className="subscribe-form__notice" role="alert">Subscriptions are being set up. Please try again shortly.</p>}
+      {status === 'error' && <p className="subscribe-form__notice" role="alert">We could not add you right now. Please try again.</p>}
+    </form>
+  )
+}
+
 const pageNames = new Set(['home', 'about', 'menu', 'contact'])
 
 function getPageFromHash() {
@@ -92,6 +114,8 @@ function App() {
   const [contactFormOpen, setContactFormOpen] = useState(false)
   const [contactStatus, setContactStatus] = useState('idle')
   const [contactForm, setContactForm] = useState({ name: '', contact: '', email: '' })
+  const [subscribeEmail, setSubscribeEmail] = useState('')
+  const [subscribeStatus, setSubscribeStatus] = useState('idle')
   const slide = heroSlides[activeSlide]
 
   useEffect(() => {
@@ -145,6 +169,8 @@ function App() {
         }
       })
 
+      gsap.fromTo('.subscribe-doodle', { autoAlpha: 0, scale: .75, rotation: -8 }, { autoAlpha: 1, scale: 1, rotation: 0, duration: .65, stagger: .08, ease: 'back.out(1.5)', delay: .18 })
+
       return () => removeListeners.forEach((remove) => remove())
     }, mainRef)
 
@@ -153,6 +179,10 @@ function App() {
 
   const selectSlide = (index) => setActiveSlide((index + heroSlides.length) % heroSlides.length)
   const closeMenu = () => setMenuOpen(false)
+  const goHome = () => {
+    closeMenu()
+    if (page === 'home') window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }))
+  }
   const openContactForm = () => {
     setContactStatus('idle')
     setContactFormOpen(true)
@@ -180,6 +210,32 @@ function App() {
       setContactStatus('error')
     }
   }
+  const updateSubscribeEmail = (event) => {
+    setSubscribeEmail(event.target.value)
+    if (subscribeStatus !== 'idle') setSubscribeStatus('idle')
+  }
+  const submitSubscribeForm = async (event) => {
+    event.preventDefault()
+    if (!siteConfig.contactFormEndpoint) {
+      setSubscribeStatus('configuration')
+      return
+    }
+
+    setSubscribeStatus('submitting')
+    const subscriberName = subscribeEmail.split('@')[0].replace(/[._-]+/g, ' ').trim() || 'Bewraped friend'
+    try {
+      await fetch(siteConfig.contactFormEndpoint, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ name: subscriberName, contact: 'Newsletter subscriber', email: subscribeEmail, enquiryType: 'newsletter subscription', source: window.location.href, submittedAt: new Date().toISOString() }),
+      })
+      setSubscribeEmail('')
+      setSubscribeStatus('success')
+    } catch {
+      setSubscribeStatus('error')
+    }
+  }
 
   return (
     <>
@@ -187,7 +243,7 @@ function App() {
       <div className="site-chrome">
         <div className="announcement"><span>{siteConfig.announcement}</span></div>
         <header className="site-header">
-          <a className="brand" href="#/home" aria-label="Bewraped home"><img src="./images/bewraped-logo.jpeg" alt="Bewraped" /></a>
+          <a className="brand" href="#/home" aria-label="Bewraped home" onClick={goHome}><BrandMark /></a>
           <button className="nav-toggle" aria-label="Toggle navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><Icon name={menuOpen ? 'close' : 'menu'} /></button>
           <nav className={menuOpen ? 'site-nav is-open' : 'site-nav'} aria-label="Main navigation">
             <a className={page === 'home' ? 'is-active' : undefined} href="#/home" aria-current={page === 'home' ? 'page' : undefined} onClick={closeMenu}>Home</a>
@@ -226,7 +282,23 @@ function App() {
             </div>
           </section>
 
-          <section className="visit-section"><div className="visit-section__content"><p className="eyebrow">Your next treat is waiting</p><h2>Ready when you are.</h2><p>Tell us how to reach you and we will get back to you soon.</p><a className="button button--cream" href="#/contact">Get in touch <Icon name="arrow" size={18} /></a></div></section>
+          <section className="subscribe-band" aria-labelledby="subscribe-title">
+            <div className="subscribe-band__image" aria-hidden="true" />
+            <div className="subscribe-band__doodles" aria-hidden="true">
+              <span className="subscribe-doodle subscribe-doodle--sparkle"><Icon name="sparkle" size={58} /></span>
+              <span className="subscribe-doodle subscribe-doodle--gift"><Icon name="gift" size={70} /></span>
+              <span className="subscribe-doodle subscribe-doodle--heart"><Icon name="heart" size={52} /></span>
+              <span className="subscribe-doodle subscribe-doodle--waffle"><Icon name="waffle" size={78} /></span>
+              <span className="subscribe-doodle subscribe-doodle--cloud"><Icon name="cloud" size={72} /></span>
+            </div>
+            <div className="subscribe-band__content">
+              <p className="eyebrow">The Bewraped list</p>
+              <h2 id="subscribe-title">A little sweetness, straight to your inbox.</h2>
+              <p>Be first to hear about new flavours, pop-ups and sweet little perks.</p>
+              <SubscribeForm email={subscribeEmail} onChange={updateSubscribeEmail} onSubmit={submitSubscribeForm} status={subscribeStatus} />
+              <small>One good email at a time. No spam, ever.</small>
+            </div>
+          </section>
         </>}
 
         {page === 'about' && <>
@@ -244,7 +316,7 @@ function App() {
         {page === 'contact' && <section className="visit-section contact-page"><div className="visit-section__content"><p className="eyebrow">Say hello</p><h1>Ready when you are.</h1><p>Leave your name, contact number, and email. The Bewraped team will get back to you soon.</p><button className="button button--cream" type="button" onClick={openContactForm}>Get in touch <Icon name="arrow" size={18} /></button></div></section>}
       </main>
 
-      <footer id="contact" className="site-footer"><div className="footer-brand"><img src="./images/bewraped-logo.jpeg" alt="Bewraped" /><p>Bubble waffles, Cloud Brew and Cold Brew made for good moments.</p></div><div><h2>Visit or order</h2><a href={siteConfig.orderUrl}>Place an order</a><span>{siteConfig.location}</span></div><div><h2>Say hello</h2><span>{siteConfig.phone}</span><span>{siteConfig.email}</span><span>{siteConfig.instagram}</span></div><div className="footer-note">Copyright {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
+      <footer id="contact" className="site-footer"><div className="footer-brand"><a className="footer-brand__link" href="#/home" onClick={goHome}><img className="footer-sticker" src="./images/bewraped-sticker.webp" alt="Bewraped sticker" /></a><p>Fresh bubble waffles and small-batch brews, made for your good moments.</p></div><div className="footer-links"><h2>Explore</h2><a href="#/home" onClick={goHome}>Home</a><a href="#/about">About Bewraped</a><a href="#/menu">Menu</a><a href="#/contact">Contact</a></div><div className="footer-connect"><h2>Say hello</h2><a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a><span>{siteConfig.location}</span><span>{siteConfig.instagram}</span></div><div className="footer-note">Copyright {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
       {contactFormOpen && <ContactModal onClose={closeContactForm} formValues={contactForm} onChange={updateContactForm} onSubmit={submitContactForm} status={contactStatus} />}
     </>
   )
