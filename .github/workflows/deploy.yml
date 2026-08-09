@@ -28,7 +28,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - uses: actions/configure-pages@v5
@@ -37,3 +37,4 @@ jobs:
           path: ./dist
       - id: deployment
         uses: actions/deploy-pages@v4
+
