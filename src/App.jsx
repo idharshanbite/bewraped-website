@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { gsap } from 'gsap'
 import { categories, heroSlides, menuSections, reasons, siteConfig } from './data/menu'
 
 const HERO_IMAGE = './images/hero-waffles.png'
@@ -76,9 +77,19 @@ function ContactModal({ onClose, formValues, onChange, onSubmit, status }) {
   )
 }
 
+const pageNames = new Set(['home', 'about', 'menu', 'contact'])
+
+function getPageFromHash() {
+  const page = window.location.hash.replace(/^#\/?/, '').toLowerCase()
+  return pageNames.has(page) ? page : 'home'
+}
+
 function App() {
+  const mainRef = useRef(null)
+  const cursorGlowRef = useRef(null)
   const [activeSlide, setActiveSlide] = useState(0)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [page, setPage] = useState(getPageFromHash)
   const [contactFormOpen, setContactFormOpen] = useState(false)
   const [contactStatus, setContactStatus] = useState('idle')
   const [contactForm, setContactForm] = useState({ name: '', contact: '', email: '' })
@@ -97,6 +108,70 @@ function App() {
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
   }, [contactFormOpen])
+
+  useEffect(() => {
+    const updatePage = () => {
+      setPage(getPageFromHash())
+      setMenuOpen(false)
+    }
+    window.addEventListener('hashchange', updatePage)
+    return () => window.removeEventListener('hashchange', updatePage)
+  }, [])
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [page])
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce), (pointer: coarse)').matches) return undefined
+
+    const glow = cursorGlowRef.current
+    const moveX = gsap.quickTo(glow, 'x', { duration: .45, ease: 'power3.out' })
+    const moveY = gsap.quickTo(glow, 'y', { duration: .45, ease: 'power3.out' })
+    const followCursor = (event) => {
+      moveX(event.clientX - 130)
+      moveY(event.clientY - 130)
+      gsap.to(glow, { autoAlpha: .72, duration: .2, overwrite: 'auto' })
+    }
+    const hideGlow = () => gsap.to(glow, { autoAlpha: 0, duration: .3, overwrite: 'auto' })
+
+    window.addEventListener('pointermove', followCursor, { passive: true })
+    window.addEventListener('blur', hideGlow)
+    return () => {
+      window.removeEventListener('pointermove', followCursor)
+      window.removeEventListener('blur', hideGlow)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce), (pointer: coarse)').matches) return undefined
+
+    const context = gsap.context(() => {
+      const sections = gsap.utils.toArray('main > section')
+      gsap.fromTo(sections, { autoAlpha: 0, y: 28 }, { autoAlpha: 1, y: 0, duration: .7, stagger: .1, ease: 'power3.out', clearProps: 'transform' })
+
+      const cards = gsap.utils.toArray('.category-card, .menu-card')
+      const removeListeners = cards.map((card) => {
+        const tiltCard = (event) => {
+          const bounds = card.getBoundingClientRect()
+          const x = (event.clientX - bounds.left) / bounds.width - .5
+          const y = (event.clientY - bounds.top) / bounds.height - .5
+          gsap.to(card, { rotateX: -y * 5, rotateY: x * 5, y: -5, duration: .35, ease: 'power2.out', overwrite: 'auto' })
+        }
+        const resetCard = () => gsap.to(card, { rotateX: 0, rotateY: 0, y: 0, duration: .45, ease: 'power3.out', overwrite: 'auto' })
+        card.addEventListener('pointermove', tiltCard)
+        card.addEventListener('pointerleave', resetCard)
+        return () => {
+          card.removeEventListener('pointermove', tiltCard)
+          card.removeEventListener('pointerleave', resetCard)
+        }
+      })
+
+      return () => removeListeners.forEach((remove) => remove())
+    }, mainRef)
+
+    return () => context.revert()
+  }, [page])
 
   const selectSlide = (index) => setActiveSlide((index + heroSlides.length) % heroSlides.length)
   const closeMenu = () => setMenuOpen(false)
@@ -131,56 +206,65 @@ function App() {
   return (
     <>
       <a className="skip-link" href="#main">Skip to content</a>
+      <div className="cursor-glow" ref={cursorGlowRef} aria-hidden="true" />
       <div className="site-chrome">
         <div className="announcement"><span>{siteConfig.announcement}</span></div>
         <header className="site-header">
-          <a className="brand" href="#top" aria-label="Bewraped home"><img src="./images/bewraped-logo.jpeg" alt="Bewraped" /></a>
+          <a className="brand" href="#/home" aria-label="Bewraped home"><img src="./images/bewraped-logo.jpeg" alt="Bewraped" /></a>
           <button className="nav-toggle" aria-label="Toggle navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><Icon name={menuOpen ? 'close' : 'menu'} /></button>
           <nav className={menuOpen ? 'site-nav is-open' : 'site-nav'} aria-label="Main navigation">
-            <a href="#menu" onClick={closeMenu}>Menu</a>
-            <a href="#why" onClick={closeMenu}>Why Bewraped?</a>
-            <a href="#contact" onClick={closeMenu}>Contact</a>
+            <a className={page === 'home' ? 'is-active' : undefined} href="#/home" aria-current={page === 'home' ? 'page' : undefined} onClick={closeMenu}>Home</a>
+            <a className={page === 'about' ? 'is-active' : undefined} href="#/about" aria-current={page === 'about' ? 'page' : undefined} onClick={closeMenu}>About</a>
+            <a className={page === 'menu' ? 'is-active' : undefined} href="#/menu" aria-current={page === 'menu' ? 'page' : undefined} onClick={closeMenu}>Menu</a>
+            <a className={page === 'contact' ? 'is-active' : undefined} href="#/contact" aria-current={page === 'contact' ? 'page' : undefined} onClick={closeMenu}>Contact</a>
             <a className="nav-order" href={siteConfig.orderUrl} onClick={closeMenu}>Order now <Icon name="arrow" size={16} /></a>
           </nav>
         </header>
       </div>
 
-      <main id="main">
-        <section id="top" className="hero" style={{ '--hero-position': slide.position, backgroundImage: `linear-gradient(90deg, rgba(29, 7, 8, .94) 0%, rgba(45, 9, 10, .78) 38%, rgba(45, 9, 10, .06) 70%), url(${HERO_IMAGE})` }}>
-          <div className="hero__content">
-            <p className="eyebrow">{slide.eyebrow}</p>
-            <h1>{slide.title}</h1>
-            <p className="hero__copy">{slide.description}</p>
-            <a className="button button--cream" href={slide.target}>{slide.cta} <Icon name="arrow" size={18} /></a>
-          </div>
-          <div className="hero__controls" aria-label="Hero slides">
-            <button onClick={() => selectSlide(activeSlide - 1)} aria-label="Previous slide"><Icon name="arrowLeft" size={18} /></button>
-            <div className="hero__dots">
-              {heroSlides.map((heroSlide, index) => <button key={heroSlide.title} className={index === activeSlide ? 'is-active' : ''} onClick={() => selectSlide(index)} aria-label={`Show slide ${index + 1}`} aria-current={index === activeSlide ? 'true' : undefined} />)}
+      <main id="main" ref={mainRef}>
+        {page === 'home' && <>
+          <section className="hero" style={{ '--hero-position': slide.position, backgroundImage: `linear-gradient(90deg, rgba(62, 11, 14, .86) 0%, rgba(99, 16, 19, .62) 42%, rgba(99, 16, 19, .08) 72%), url(${HERO_IMAGE})` }}>
+            <div className="hero__content">
+              <p className="eyebrow">{slide.eyebrow}</p>
+              <h1>{slide.title}</h1>
+              <p className="hero__copy">{slide.description}</p>
+              <a className="button button--cream" href={slide.target}>{slide.cta} <Icon name="arrow" size={18} /></a>
             </div>
-            <button onClick={() => selectSlide(activeSlide + 1)} aria-label="Next slide"><Icon name="arrow" size={18} /></button>
-          </div>
-        </section>
+            <div className="hero__controls" aria-label="Hero slides">
+              <button onClick={() => selectSlide(activeSlide - 1)} aria-label="Previous slide"><Icon name="arrowLeft" size={18} /></button>
+              <div className="hero__dots">
+                {heroSlides.map((heroSlide, index) => <button key={heroSlide.title} className={index === activeSlide ? 'is-active' : ''} onClick={() => selectSlide(index)} aria-label={`Show slide ${index + 1}`} aria-current={index === activeSlide ? 'true' : undefined} />)}
+              </div>
+              <button onClick={() => selectSlide(activeSlide + 1)} aria-label="Next slide"><Icon name="arrow" size={18} /></button>
+            </div>
+          </section>
 
-        <section className="intro section" aria-labelledby="intro-title">
-          <p className="eyebrow eyebrow--red">Your comfort order</p>
-          <h2 id="intro-title">One little stop. A lot to love.</h2>
-          <p className="section-lead">Start with a warm bubble waffle, then find the brew that matches your mood.</p>
-          <div className="category-grid">
-            {categories.map((category) => <a className="category-card" href={category.target} key={category.title}><span className="category-card__icon"><Icon name={category.icon} size={34} /></span><h3>{category.title}</h3><p>{category.copy}</p><span className="category-card__link">Explore <Icon name="arrow" size={16} /></span></a>)}
-          </div>
-        </section>
+          <section className="intro section" aria-labelledby="intro-title">
+            <p className="eyebrow eyebrow--red">Your comfort order</p>
+            <h2 id="intro-title">One little stop. A lot to love.</h2>
+            <p className="section-lead">Start with a warm bubble waffle, then find the brew that matches your mood.</p>
+            <div className="category-grid">
+              {categories.map((category) => <a className="category-card" href={category.target} key={category.title}><span className="category-card__icon"><Icon name={category.icon} size={34} /></span><h3>{category.title}</h3><p>{category.copy}</p><span className="category-card__link">Explore <Icon name="arrow" size={16} /></span></a>)}
+            </div>
+          </section>
 
-        <section id="why" className="why section" aria-labelledby="why-title">
-          <div className="section-heading section-heading--split"><div><p className="eyebrow eyebrow--red">Why Bewraped?</p><h2 id="why-title">Good mood food, wrapped up right.</h2></div><p>We keep the menu simple: fresh waffle batter, thoughtful toppings, and brews that make you want to stay a little longer.</p></div>
-          <div className="reason-grid">{reasons.map((reason) => <article className="reason" key={reason.title}><span><Icon name={reason.icon} size={26} /></span><h3>{reason.title}</h3><p>{reason.copy}</p></article>)}</div>
-        </section>
+          <section className="visit-section"><div className="visit-section__content"><p className="eyebrow">Your next treat is waiting</p><h2>Ready when you are.</h2><p>Tell us how to reach you and we will get back to you soon.</p><a className="button button--cream" href="#/contact">Get in touch <Icon name="arrow" size={18} /></a></div></section>
+        </>}
 
-        <section id="menu" className="menu-section section" aria-label="Bewraped menu">
+        {page === 'about' && <>
+          <section className="page-intro section"><p className="eyebrow eyebrow--red">About Bewraped</p><h1>Sweet moments, thoughtfully made.</h1><p>Bewraped is all about fresh bubble waffles, small-batch brews, and easy treats made for the people you share them with.</p></section>
+          <section className="why section" aria-labelledby="why-title">
+            <div className="section-heading section-heading--split"><div><p className="eyebrow eyebrow--red">Why Bewraped?</p><h2 id="why-title">Good mood food, wrapped up right.</h2></div><p>We keep the menu simple: fresh waffle batter, thoughtful toppings, and brews that make you want to stay a little longer.</p></div>
+            <div className="reason-grid">{reasons.map((reason) => <article className="reason" key={reason.title}><span><Icon name={reason.icon} size={26} /></span><h3>{reason.title}</h3><p>{reason.copy}</p></article>)}</div>
+          </section>
+        </>}
+
+        {page === 'menu' && <section className="menu-section section" aria-label="Bewraped menu">
           {menuSections.map((section) => <div className="menu-group" id={section.id} key={section.id}><div className="section-heading"><div><p className="eyebrow eyebrow--red">{section.eyebrow}</p><h2>{section.title}</h2></div><p>{section.description}</p></div><div className="menu-grid">{section.items.map((item) => <MenuCard item={item} key={item.name} />)}</div></div>)}
-        </section>
+        </section>}
 
-        <section className="visit-section"><div className="visit-section__content"><p className="eyebrow">Your next treat is waiting</p><h2>Ready when you are.</h2><p>Tell us how to reach you and we will get back to you soon.</p><button className="button button--cream" type="button" onClick={openContactForm}>Get in touch <Icon name="arrow" size={18} /></button></div></section>
+        {page === 'contact' && <section className="visit-section contact-page"><div className="visit-section__content"><p className="eyebrow">Say hello</p><h1>Ready when you are.</h1><p>Leave your name, contact number, and email. The Bewraped team will get back to you soon.</p><button className="button button--cream" type="button" onClick={openContactForm}>Get in touch <Icon name="arrow" size={18} /></button></div></section>}
       </main>
 
       <footer id="contact" className="site-footer"><div className="footer-brand"><img src="./images/bewraped-logo.jpeg" alt="Bewraped" /><p>Bubble waffles, Cloud Brew and Cold Brew made for good moments.</p></div><div><h2>Visit or order</h2><a href={siteConfig.orderUrl}>Place an order</a><span>{siteConfig.location}</span></div><div><h2>Say hello</h2><span>{siteConfig.phone}</span><span>{siteConfig.email}</span><span>{siteConfig.instagram}</span></div><div className="footer-note">Copyright {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
