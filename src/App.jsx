@@ -287,23 +287,6 @@ function App() {
             </div>
           </section>
 
-          <section className="subscribe-band" aria-labelledby="subscribe-title">
-            <div className="subscribe-band__image" aria-hidden="true" />
-            <div className="subscribe-band__doodles" aria-hidden="true">
-              <span className="subscribe-doodle subscribe-doodle--sparkle"><Icon name="sparkle" size={58} /></span>
-              <span className="subscribe-doodle subscribe-doodle--coffee"><Icon name="coffeeBean" size={70} /></span>
-              <span className="subscribe-doodle subscribe-doodle--matcha"><Icon name="matcha" size={62} /></span>
-              <span className="subscribe-doodle subscribe-doodle--waffle"><Icon name="waffle" size={78} /></span>
-              <span className="subscribe-doodle subscribe-doodle--ube"><Icon name="ube" size={68} /></span>
-            </div>
-            <div className="subscribe-band__content">
-              <p className="eyebrow">The Bewraped list</p>
-              <h2 id="subscribe-title">A little sweetness, straight to your inbox.</h2>
-              <p>Be first to hear about new flavours, pop-ups and sweet little perks.</p>
-              <SubscribeForm email={subscribeEmail} onChange={updateSubscribeEmail} onSubmit={submitSubscribeForm} status={subscribeStatus} />
-              <small>One good email at a time. No spam, ever.</small>
-            </div>
-          </section>
         </>}
 
         {page === 'about' && <>
@@ -319,6 +302,24 @@ function App() {
         </section>}
 
         {page === 'contact' && <section className="visit-section contact-page"><div className="visit-section__content"><p className="eyebrow">Say hello</p><h1>Ready when you are.</h1><p>Leave your name, contact number, and email. The Bewraped team will get back to you soon.</p><button className="button button--cream" type="button" onClick={openContactForm}>Get in touch <Icon name="arrow" size={18} /></button></div></section>}
+
+        <section className="subscribe-band" aria-labelledby="subscribe-title">
+          <div className="subscribe-band__image" aria-hidden="true" />
+          <div className="subscribe-band__doodles" aria-hidden="true">
+            <span className="subscribe-doodle subscribe-doodle--sparkle"><Icon name="sparkle" size={58} /></span>
+            <span className="subscribe-doodle subscribe-doodle--coffee"><Icon name="coffeeBean" size={70} /></span>
+            <span className="subscribe-doodle subscribe-doodle--matcha"><Icon name="matcha" size={62} /></span>
+            <span className="subscribe-doodle subscribe-doodle--waffle"><Icon name="waffle" size={78} /></span>
+            <span className="subscribe-doodle subscribe-doodle--ube"><Icon name="ube" size={68} /></span>
+          </div>
+          <div className="subscribe-band__content">
+            <p className="eyebrow">The Bewraped list</p>
+            <h2 id="subscribe-title">A little sweetness, straight to your inbox.</h2>
+            <p>Be first to hear about new flavours, pop-ups and sweet little perks.</p>
+            <SubscribeForm email={subscribeEmail} onChange={updateSubscribeEmail} onSubmit={submitSubscribeForm} status={subscribeStatus} />
+            <small>One good email at a time. No spam, ever.</small>
+          </div>
+        </section>
       </main>
 
       <footer id="contact" className="site-footer"><div className="footer-brand"><a className="footer-brand__link" href="#/home" onClick={goHome}><img className="footer-sticker" src="./images/bewraped-sticker.webp" alt="Bewraped sticker" /></a><p>Fresh bubble waffles and small-batch brews, made for your good moments.</p></div><div className="footer-links"><h2>Explore</h2><a href="#/home" onClick={goHome}>Home</a><a href="#/about">About Bewraped</a><a href="#/menu">Menu</a><a href="#/contact">Contact</a></div><div className="footer-connect"><h2>Say hello</h2><a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a><span>{siteConfig.location}</span><span>{siteConfig.instagram}</span></div><div className="footer-note">Copyright {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
