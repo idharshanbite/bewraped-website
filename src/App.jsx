@@ -136,7 +136,7 @@ function WelcomeModal({ onClose, onSubscribe }) {
   )
 }
 
-function AccountPage({ session, view, formValues, onChange, onSubmit, onViewChange, onSignOut, loading, message, error }) {
+function AccountPage({ session, view, formValues, onChange, onSubmit, onViewChange, onSignOut, loading, message, error, verificationOpen, verificationEmail, verificationCode, verificationLoading, verificationMessage, verificationError, onVerificationCodeChange, onVerifyEmail, onResendVerification, onCloseVerification }) {
   const isSignUp = view === 'sign-up'
   const isResetRequest = view === 'reset-request'
   const isResetPassword = view === 'reset-password'
@@ -200,6 +200,23 @@ function AccountPage({ session, view, formValues, onChange, onSubmit, onViewChan
           {(isResetRequest || isResetPassword) && <button className="account-text-button" type="button" onClick={() => onViewChange('sign-in')}>Back to sign in</button>}
         </div>
       </div>
+      {verificationOpen && <div className="verification-dialog-backdrop">
+        <div className="verification-dialog" role="dialog" aria-modal="true" aria-labelledby="verification-title">
+          <button className="verification-dialog__close" type="button" onClick={onCloseVerification} aria-label="Close verification">×</button>
+          <p className="eyebrow eyebrow--red">Check your email</p>
+          <h2 id="verification-title">Verify your email.</h2>
+          <p className="verification-dialog__lead">We have sent a unique six-digit verification code to <strong>{verificationEmail}</strong>. Enter it below to verify your email address and complete your Bewraped account setup.</p>
+          <form className="account-form verification-dialog__form" onSubmit={onVerifyEmail}>
+            <label htmlFor="verification-code">Six-digit verification code
+              <input id="verification-code" name="verificationCode" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength="6" value={verificationCode} onChange={onVerificationCodeChange} required />
+            </label>
+            {verificationError && <p className="account-status account-status--error" role="alert">{verificationError}</p>}
+            {verificationMessage && <p className="account-status" role="status">{verificationMessage}</p>}
+            <button className="button" type="submit" disabled={verificationLoading}>{verificationLoading ? 'Verifying...' : <>Verify my email <Icon name="arrow" size={18} /></>}</button>
+          </form>
+          <button className="account-text-button verification-dialog__resend" type="button" onClick={onResendVerification} disabled={verificationLoading}>Resend code</button>
+        </div>
+      </div>}
     </section>
   )
 }
@@ -232,6 +249,12 @@ function App() {
   const [accountLoading, setAccountLoading] = useState(false)
   const [accountMessage, setAccountMessage] = useState('')
   const [accountError, setAccountError] = useState('')
+  const [verificationOpen, setVerificationOpen] = useState(false)
+  const [verificationEmail, setVerificationEmail] = useState('')
+  const [verificationCode, setVerificationCode] = useState('')
+  const [verificationLoading, setVerificationLoading] = useState(false)
+  const [verificationMessage, setVerificationMessage] = useState('')
+  const [verificationError, setVerificationError] = useState('')
   const slide = heroSlides[activeSlide]
 
   useEffect(() => {
@@ -411,12 +434,14 @@ function App() {
     setWelcomeOpen(false)
     setAccountError('')
     setAccountMessage('')
+    setVerificationOpen(false)
     if (session) setAccountView('sign-in')
   }
   const changeAccountView = (nextView) => {
     setAccountView(nextView)
     setAccountError('')
     setAccountMessage('')
+    setVerificationOpen(false)
     setAccountForm((current) => ({ ...current, password: '', confirmPassword: '' }))
   }
   const updateAccountForm = (event) => {
@@ -454,7 +479,12 @@ function App() {
           setSession(data.session)
           setAccountMessage('Your Bewraped account is ready.')
         } else {
-          setAccountMessage('Check your email and confirm your address to finish creating your Bewraped account.')
+          setAccountView('sign-in')
+          setVerificationEmail(cleanEmail)
+          setVerificationCode('')
+          setVerificationError('')
+          setVerificationMessage('Your account has been created successfully. Please check your email for your unique six-digit verification code.')
+          setVerificationOpen(true)
         }
         return
       }
@@ -483,6 +513,46 @@ function App() {
       setAccountError(error.message || 'We could not complete that request. Please try again.')
     } finally {
       setAccountLoading(false)
+    }
+  }
+  const updateVerificationCode = (event) => {
+    setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6))
+    if (verificationError) setVerificationError('')
+  }
+  const verifyAccountEmail = async (event) => {
+    event.preventDefault()
+    if (!/^\d{6}$/.test(verificationCode)) {
+      setVerificationError('Enter the six-digit code from your email.')
+      return
+    }
+
+    setVerificationLoading(true)
+    setVerificationError('')
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({ email: verificationEmail, token: verificationCode, type: 'email' })
+      if (error) throw error
+      if (data.session) setSession(data.session)
+      setVerificationCode('')
+      setVerificationMessage('')
+      setVerificationOpen(false)
+    } catch (error) {
+      setVerificationError(error.message || 'We could not verify that code. Please try again.')
+    } finally {
+      setVerificationLoading(false)
+    }
+  }
+  const resendVerificationCode = async () => {
+    setVerificationLoading(true)
+    setVerificationError('')
+    try {
+      const { error } = await supabase.auth.resend({ type: 'signup', email: verificationEmail, options: { emailRedirectTo: authRedirectUrl() } })
+      if (error) throw error
+      setVerificationCode('')
+      setVerificationMessage('A new verification code has been sent. The previous code is no longer valid.')
+    } catch (error) {
+      setVerificationError(error.message || 'We could not resend the code. Please try again in a moment.')
+    } finally {
+      setVerificationLoading(false)
     }
   }
   const signOut = async () => {
@@ -607,7 +677,7 @@ function App() {
 
         {page === 'contact' && <section className="visit-section contact-page"><div className="visit-section__content"><p className="eyebrow">Say hello</p><h1>Ready when you are.</h1><p>Leave your name, contact number, and email. The Bewraped team will get back to you soon.</p><button className="button button--cream" type="button" onClick={openContactForm}>Get in touch <Icon name="arrow" size={18} /></button></div></section>}
 
-        {page === 'account' && <AccountPage session={session} view={accountView} formValues={accountForm} onChange={updateAccountForm} onSubmit={submitAccountForm} onViewChange={changeAccountView} onSignOut={signOut} loading={accountLoading} message={accountMessage} error={accountError} />}
+        {page === 'account' && <AccountPage session={session} view={accountView} formValues={accountForm} onChange={updateAccountForm} onSubmit={submitAccountForm} onViewChange={changeAccountView} onSignOut={signOut} loading={accountLoading} message={accountMessage} error={accountError} verificationOpen={verificationOpen} verificationEmail={verificationEmail} verificationCode={verificationCode} verificationLoading={verificationLoading} verificationMessage={verificationMessage} verificationError={verificationError} onVerificationCodeChange={updateVerificationCode} onVerifyEmail={verifyAccountEmail} onResendVerification={resendVerificationCode} onCloseVerification={() => setVerificationOpen(false)} />}
 
         <section className="subscribe-band" id="subscribe" aria-labelledby="subscribe-title">
           <div className="subscribe-band__image" aria-hidden="true" />
@@ -638,4 +708,3 @@ function App() {
 }
 
 export default App
-
