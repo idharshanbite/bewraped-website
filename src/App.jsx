@@ -77,7 +77,7 @@ function FeedbackLanding() {
         <span className="feedback-section__quote-mark" aria-hidden="true"><Icon name="quote" size={48} /></span>
         <p className="eyebrow eyebrow--red">Customer feedback</p>
         <h2 id="feedback-title">Every good moment helps shape the next one.</h2>
-        <p>We are collecting the first Bewraped stories. Tell us what you lovedâ€”the waffle, the brew, or the people you shared it with.</p>
+        <p>We are collecting the first Bewraped stories. Tell us what you loved - the waffle, the brew, or the people you shared it with.</p>
       </div>
       <div className="feedback-section__promises">
         {promises.map((promise) => <article className="feedback-promise" key={promise.title}><span><Icon name={promise.icon} size={25} /></span><h3>{promise.title}</h3><p>{promise.copy}</p></article>)}
