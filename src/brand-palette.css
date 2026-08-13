@@ -151,9 +151,26 @@ select {
 }
 
 .hero::before,
-.hero::after,
 .menu-card__image::after {
   display: none;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: clamp(4.5rem, 11vw, 9rem);
+  display: block;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent 0%, #F1EADC 92%);
+}
+
+.hero__content,
+.hero__controls {
+  z-index: 1;
 }
 
 .hero h1,
@@ -683,6 +700,10 @@ select {
   .hero {
     min-height: max(530px, calc(100svh - 6.7rem));
     background-position: 64% center !important;
+  }
+
+  .hero::after {
+    height: min(7rem, 22vw);
   }
 
   .hero__content {
