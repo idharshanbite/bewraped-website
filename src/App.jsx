@@ -115,6 +115,23 @@ function SubscribeForm({ email, onChange, onSubmit, status }) {
   )
 }
 
+function WelcomeModal({ onClose, onSubscribe }) {
+  return (
+    <div className="welcome-modal__backdrop" onMouseDown={onClose}>
+      <section className="welcome-modal" role="dialog" aria-modal="true" aria-labelledby="welcome-modal-title" onMouseDown={(event) => event.stopPropagation()}>
+        <button className="welcome-modal__close" type="button" aria-label="Close welcome message" onClick={onClose}><Icon name="close" size={20} /></button>
+        <div className="welcome-modal__visual" aria-hidden="true"><img src="./images/bewraped-icon-off-white.png" alt="" /></div>
+        <div className="welcome-modal__content">
+          <p className="eyebrow eyebrow--red">Welcome to Bewraped</p>
+          <h2 id="welcome-modal-title">A little sweetness, straight to your inbox.</h2>
+          <p>Get first taste of new flavours, pop-ups, and sweet little perks.</p>
+          <button className="button" type="button" onClick={onSubscribe}>Join the list <Icon name="arrow" size={18} /></button>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 const pageNames = new Set(['home', 'about', 'menu', 'contact'])
 
 function getPageFromHash() {
@@ -135,6 +152,8 @@ function App() {
   const [contactForm, setContactForm] = useState({ name: '', contact: '', email: '', website: '' })
   const [subscribeEmail, setSubscribeEmail] = useState('')
   const [subscribeStatus, setSubscribeStatus] = useState('idle')
+  const [welcomeOpen, setWelcomeOpen] = useState(() => wasReloaded || getPageFromHash() === 'home')
+  const [subscribeReached, setSubscribeReached] = useState(false)
   const slide = heroSlides[activeSlide]
 
   useEffect(() => {
@@ -152,7 +171,7 @@ function App() {
   }, [activeSlide])
 
   useEffect(() => {
-    const timer = window.setInterval(() => setActiveSlide((current) => (current + 1) % heroSlides.length), 1500)
+    const timer = window.setInterval(() => setActiveSlide((current) => (current + 1) % heroSlides.length), 2000)
     return () => window.clearInterval(timer)
   }, [])
 
@@ -164,6 +183,33 @@ function App() {
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
   }, [contactFormOpen])
+
+  useEffect(() => {
+    if (!welcomeOpen) return undefined
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setWelcomeOpen(false)
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [welcomeOpen])
+
+  useEffect(() => {
+    const subscribeSection = document.getElementById('subscribe')
+    if (!subscribeSection) return undefined
+
+    const updateSubscribeJump = () => {
+      const triggerPoint = subscribeSection.offsetTop - window.innerHeight * .45
+      setSubscribeReached(window.scrollY >= triggerPoint)
+    }
+
+    updateSubscribeJump()
+    window.addEventListener('scroll', updateSubscribeJump, { passive: true })
+    window.addEventListener('resize', updateSubscribeJump)
+    return () => {
+      window.removeEventListener('scroll', updateSubscribeJump)
+      window.removeEventListener('resize', updateSubscribeJump)
+    }
+  }, [page])
 
   useEffect(() => {
     const updatePage = () => {
@@ -244,6 +290,14 @@ function App() {
     closeMenu()
     document.getElementById('subscribe')?.scrollIntoView({ behavior: 'smooth' })
   }
+  const goToTop = () => {
+    closeMenu()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+  const openSubscribeFromWelcome = () => {
+    setWelcomeOpen(false)
+    window.requestAnimationFrame(goToSubscribe)
+  }
   const openContactForm = () => {
     setContactStatus('idle')
     setContactFormOpen(true)
@@ -319,7 +373,7 @@ function App() {
 
       <main id="main" ref={mainRef}>
         {page === 'home' && <>
-          <section className="hero" style={{ backgroundImage: `linear-gradient(90deg, rgba(62, 11, 14, .86) 0%, rgba(99, 16, 19, .62) 42%, rgba(99, 16, 19, .08) 72%), url(${HERO_BACKGROUND_IMAGE})` }}>
+          <section className="hero" style={{ backgroundImage: `url(${HERO_BACKGROUND_IMAGE})` }}>
             <div className="hero__content" ref={heroCopyRef}>
               <p className="eyebrow hero-copy-motion">{slide.eyebrow}</p>
               <h1 className="hero-copy-motion">{slide.title}</h1>
@@ -377,12 +431,14 @@ function App() {
         </section>
       </main>
 
-      <button className="subscribe-jump" type="button" onClick={goToSubscribe} aria-label="Scroll to subscribe"><span>Subscribe</span><Icon name="arrowDown" size={19} /></button>
+      <button className={`subscribe-jump${subscribeReached ? ' is-up' : ''}`} type="button" onClick={subscribeReached ? goToTop : goToSubscribe} aria-label={subscribeReached ? 'Scroll to top' : 'Scroll to subscribe'}><span>{subscribeReached ? 'Top' : 'Subscribe'}</span><Icon name="arrowDown" size={19} /></button>
 
-      <footer id="contact" className="site-footer"><div className="footer-brand"><a className="footer-brand__link" href="#/home" onClick={goHome}><img className="footer-sticker" src="./images/bewraped-sticker.webp" alt="Bewraped sticker" /></a><p>Fresh bubble waffles and small-batch brews, made for your good moments.</p></div><div className="footer-links"><h2>Explore</h2><a href="#/home" onClick={goHome}>Home</a><a href="#/home#about-details" onClick={goToAbout}>About Bewraped</a><a href="#/menu">Menu</a><a href="#/contact">Contact</a></div><div className="footer-connect"><h2>Say hello</h2><a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a><span>{siteConfig.location}</span></div><div className="footer-socials"><h2>Social media</h2><div className="social-links"><SocialLink icon="instagram" label="Instagram" href={siteConfig.socialLinks.instagram} /><SocialLink icon="tiktok" label="TikTok" href={siteConfig.socialLinks.tiktok} /><SocialLink icon="linkedin" label="LinkedIn" href={siteConfig.socialLinks.linkedin} /><SocialLink icon="whatsapp" label="WhatsApp" href={siteConfig.socialLinks.whatsapp} /></div></div><div className="footer-note">Copyright {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
+      <footer id="contact" className="site-footer"><div className="footer-brand"><a className="footer-brand__link" href="#/home" onClick={goHome}><img className="footer-sticker" src="./images/bewraped-icon-red.png" alt="Bewraped icon" /></a><p>Fresh bubble waffles and small-batch brews, made for your good moments.</p></div><div className="footer-links"><h2>Explore</h2><a href="#/home" onClick={goHome}>Home</a><a href="#/home#about-details" onClick={goToAbout}>About Bewraped</a><a href="#/menu">Menu</a><a href="#/contact">Contact</a></div><div className="footer-connect"><h2>Say hello</h2><a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a><span>{siteConfig.location}</span></div><div className="footer-socials"><h2>Social media</h2><div className="social-links"><SocialLink icon="instagram" label="Instagram" href={siteConfig.socialLinks.instagram} /><SocialLink icon="tiktok" label="TikTok" href={siteConfig.socialLinks.tiktok} /><SocialLink icon="linkedin" label="LinkedIn" href={siteConfig.socialLinks.linkedin} /><SocialLink icon="whatsapp" label="WhatsApp" href={siteConfig.socialLinks.whatsapp} /></div></div><div className="footer-note">Copyright {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
+      {page === 'home' && welcomeOpen && <WelcomeModal onClose={() => setWelcomeOpen(false)} onSubscribe={openSubscribeFromWelcome} />}
       {contactFormOpen && <ContactModal onClose={closeContactForm} formValues={contactForm} onChange={updateContactForm} onSubmit={submitContactForm} status={contactStatus} />}
     </>
   )
 }
 
 export default App
+
