@@ -726,7 +726,12 @@ body {
 }
 
 .subscribe-jump.is-up svg {
-  transform: rotate(180deg);
+  animation: subscribe-arrow-up-bob 1.45s ease-in-out infinite;
+}
+
+@keyframes subscribe-arrow-up-bob {
+  0%, 100% { transform: rotate(180deg) translateY(-2px); }
+  50% { transform: rotate(180deg) translateY(3px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
