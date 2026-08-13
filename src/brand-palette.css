@@ -145,6 +145,39 @@ select {
   color: #C8102E;
 }
 
+.site-header {
+  position: relative;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+}
+
+.account-link {
+  display: grid;
+  place-items: center;
+  width: 2.65rem;
+  height: 2.65rem;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  color: #000000;
+  background: #F1EADC;
+  transition: color .2s ease, background .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.account-link:hover,
+.account-link:focus-visible,
+.account-link.is-active {
+  border-color: #C8102E;
+  color: #FFFFFF;
+  background: #C8102E;
+  outline: none;
+  transform: translateY(-2px);
+}
+
 .hero,
 .visit-section {
   color: #000000;
@@ -354,6 +387,215 @@ select {
 .visit-section h1,
 .visit-section h2 {
   color: #C8102E;
+}
+
+.account-page {
+  min-height: 560px;
+  padding: clamp(4.5rem, 9vw, 7.5rem) 1.25rem;
+  background: #F1EADC;
+}
+
+.account-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(340px, .85fr);
+  align-items: center;
+  gap: clamp(2.5rem, 8vw, 8rem);
+  width: min(100%, 1120px);
+  min-height: 430px;
+  margin: 0 auto;
+}
+
+.account-shell--signed-in {
+  grid-template-columns: 1fr minmax(280px, .6fr);
+}
+
+.account-intro h1 {
+  max-width: 660px;
+  margin: 0;
+  font-family: 'Delight', 'DM Sans', sans-serif;
+  color: #C8102E;
+  font-size: clamp(3rem, 5.6vw, 5.15rem);
+  font-weight: 700;
+  line-height: .98;
+  letter-spacing: -.05em;
+}
+
+.account-intro > p:not(.eyebrow) {
+  max-width: 525px;
+  margin: 1.25rem 0 0;
+  color: #000000;
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.account-perks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .7rem 1.1rem;
+  margin-top: 1.8rem;
+}
+
+.account-perks span {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  color: #000000;
+  font-size: .88rem;
+  font-weight: 700;
+}
+
+.account-perks svg,
+.account-card__icon {
+  color: #C8102E;
+}
+
+.account-card {
+  width: min(100%, 420px);
+  padding: clamp(1.6rem, 4vw, 2.35rem);
+  border: 3px solid #000000;
+  border-radius: 24px;
+  background: #FFFFFF;
+  box-shadow: 8px 8px 0 #C8102E;
+}
+
+.account-card h2 {
+  margin: 1.3rem 0 0;
+  font-family: 'Delight', 'DM Sans', sans-serif;
+  color: #000000;
+  font-size: clamp(2rem, 4vw, 2.7rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+
+.account-card__lead {
+  margin: .8rem 0 1.4rem;
+  color: #000000;
+  line-height: 1.55;
+}
+
+.account-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: .3rem;
+  padding: .3rem;
+  border-radius: 999px;
+  background: #F1EADC;
+}
+
+.account-tabs button {
+  min-height: 2.7rem;
+  padding: .5rem .75rem;
+  border: 0;
+  border-radius: 999px;
+  color: #000000;
+  background: transparent;
+  font: inherit;
+  font-size: .88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.account-tabs button.is-active {
+  color: #FFFFFF;
+  background: #C8102E;
+}
+
+.account-form {
+  display: grid;
+  gap: .9rem;
+}
+
+.account-form label {
+  display: grid;
+  gap: .42rem;
+  color: #000000;
+  font-size: .84rem;
+  font-weight: 700;
+}
+
+.account-form input {
+  width: 100%;
+  min-height: 3.15rem;
+  padding: .75rem .9rem;
+  border: 2px solid #000000;
+  border-radius: 10px;
+  color: #000000;
+  background: #FFFFFF;
+  font: inherit;
+}
+
+.account-form input:focus {
+  border-color: #C8102E;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(200, 16, 46, .18);
+}
+
+.account-form .button {
+  width: 100%;
+  margin-top: .25rem;
+  cursor: pointer;
+}
+
+.account-form .button:disabled {
+  cursor: wait;
+  opacity: .72;
+  transform: none;
+}
+
+.account-status {
+  margin: 0;
+  padding: .8rem .9rem;
+  border: 1px solid #C8102E;
+  border-radius: 10px;
+  color: #000000;
+  background: #F1EADC;
+  font-size: .88rem;
+  line-height: 1.45;
+}
+
+.account-status--error {
+  color: #FFFFFF;
+  background: #C8102E;
+  border-color: #C8102E;
+}
+
+.account-text-button {
+  display: inline-flex;
+  margin: 1.1rem 0 0;
+  padding: 0;
+  border: 0;
+  color: #C8102E;
+  background: transparent;
+  font: inherit;
+  font-size: .86rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: .22rem;
+  cursor: pointer;
+}
+
+.account-card--success {
+  text-align: center;
+}
+
+.account-card--success .account-card__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 4.1rem;
+  height: 4.1rem;
+  border: 2px solid #C8102E;
+  border-radius: 50%;
+  background: #F1EADC;
+}
+
+.account-card--success > p:not(.account-status) {
+  margin: .8rem 0 1.4rem;
+  color: #000000;
+}
+
+.account-card--success .button {
+  margin-top: 1.35rem;
 }
 
 .subscribe-band {
@@ -728,6 +970,16 @@ select {
     box-shadow: 0 5px 0 #000000;
   }
 
+  .header-actions {
+    gap: .45rem;
+    margin-left: 0;
+  }
+
+  .account-link {
+    width: 2.45rem;
+    height: 2.45rem;
+  }
+
   .hero {
     min-height: max(530px, calc(100svh - 6.7rem));
     background-position: 64% center !important;
@@ -856,6 +1108,33 @@ select {
   .visit-section h1 {
     font-size: clamp(2.55rem, 11vw, 3.5rem);
     line-height: 1;
+  }
+
+  .account-page {
+    min-height: 0;
+    padding: 4.3rem 1.1rem;
+  }
+
+  .account-shell,
+  .account-shell--signed-in {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    gap: 2.5rem;
+  }
+
+  .account-intro h1 {
+    font-size: clamp(2.65rem, 11.5vw, 3.55rem);
+  }
+
+  .account-intro > p:not(.eyebrow) {
+    font-size: .96rem;
+  }
+
+  .account-card {
+    width: 100%;
+    padding: 1.45rem;
+    border-radius: 20px;
+    box-shadow: 6px 6px 0 #C8102E;
   }
 
   .subscribe-band {
