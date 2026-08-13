@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { categories, heroSlides, menuSections, reasons, siteConfig } from './data/menu'
+import { supabase, authRedirectUrl } from './supabaseClient'
 
 const HERO_BACKGROUND_IMAGE = './images/hero-drinks.jpg'
 const MENU_IMAGE = './images/hero-waffles.png'
@@ -20,6 +21,9 @@ function Icon({ name, size = 24 }) {
     arrowDown: <><path d="M12 4v16" /><path d="m6 14 6 6 6-6" /></>,
     menu: <><path d="M4 7h16M4 12h16M4 17h16" /></>,
     close: <><path d="m6 6 12 12M18 6 6 18" /></>,
+    user: <><circle cx="12" cy="8" r="3.2" /><path d="M5 20c.8-3.3 3.1-5 7-5s6.2 1.7 7 5" /></>,
+    lock: <><rect x="4.5" y="10" width="15" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
+    mail: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m4 7 8 6 8-6" /></>,
     coffeeBean: <><path d="M19.2 4.8c-4-3.9-10.4-2.1-13.3 2.2-2.9 4.4-1.5 10.6 2.7 12.6 4.1 2 9.4-.5 11.3-5 1.8-4.3 1.2-7.5-.7-9.7Z" /><path d="M7 17c2.2-3.3 4.9-6.5 8.9-9.3" /></>,
     bubbles: <><circle cx="7" cy="7" r="2.5" /><circle cx="16.5" cy="6.5" r="3.5" /><circle cx="14" cy="16" r="4.5" /><circle cx="5.5" cy="17.5" r="1.5" /></>,
     matcha: <><path d="M5 10h14l-1.2 9H6.2L5 10Z" /><path d="M4 10h16M9 6.5c1.7-2.6 4.3-3.3 6.6-2.8-.5 2.4-2.6 4.5-5.5 4.2" /><path d="M12 8.8c.1-1.6.9-3.1 2.1-4.3" /></>,
@@ -132,7 +136,75 @@ function WelcomeModal({ onClose, onSubscribe }) {
   )
 }
 
-const pageNames = new Set(['home', 'about', 'menu', 'contact'])
+function AccountPage({ session, view, formValues, onChange, onSubmit, onViewChange, onSignOut, loading, message, error }) {
+  const isSignUp = view === 'sign-up'
+  const isResetRequest = view === 'reset-request'
+  const isResetPassword = view === 'reset-password'
+  const displayName = session?.user?.user_metadata?.full_name?.trim() || session?.user?.email?.split('@')[0] || 'Bewraped friend'
+
+  if (session && !isResetPassword) {
+    return (
+      <section className="account-page" aria-labelledby="account-title">
+        <div className="account-shell account-shell--signed-in">
+          <div className="account-intro">
+            <p className="eyebrow eyebrow--red">Your Bewraped account</p>
+            <h1 id="account-title">Good to see you, {displayName}.</h1>
+            <p>Your account is ready whenever a sweet moment calls. We will add order history and loyalty perks here when online ordering launches.</p>
+          </div>
+          <div className="account-card account-card--success">
+            <span className="account-card__icon"><Icon name="user" size={34} /></span>
+            <h2>Signed in</h2>
+            <p>{session.user.email}</p>
+            {!session.user.email_confirmed_at && <p className="account-status account-status--notice">Please confirm your email to finish setting up your account.</p>}
+            <button className="button button--cream" type="button" onClick={onSignOut}>Sign out <Icon name="arrow" size={18} /></button>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  const title = isResetPassword ? 'Choose a new password.' : isResetRequest ? 'Reset your password.' : isSignUp ? 'Make it official.' : 'Welcome back.'
+  const lead = isResetPassword ? 'Enter a new password for your Bewraped account.' : isResetRequest ? 'We will send a secure password-reset link to your email.' : isSignUp ? 'Create one verified account for all your Bewraped moments.' : 'Sign in to your Bewraped account.'
+  const submitLabel = isResetPassword ? 'Save new password' : isResetRequest ? 'Send reset link' : isSignUp ? 'Create my account' : 'Sign in'
+
+  return (
+    <section className="account-page" aria-labelledby="account-title">
+      <div className="account-shell">
+        <div className="account-intro">
+          <p className="eyebrow eyebrow--red">Your Bewraped account</p>
+          <h1 id="account-title">One account. Every sweet moment.</h1>
+          <p>Create one account with your email, then sign in again any time from any device.</p>
+          <div className="account-perks" aria-label="Account benefits">
+            <span><Icon name="mail" size={19} /> Verified email</span>
+            <span><Icon name="lock" size={19} /> Secure sign-in</span>
+          </div>
+        </div>
+
+        <div className="account-card">
+          {!isResetPassword && <div className="account-tabs" role="tablist" aria-label="Account options">
+            <button className={!isSignUp && !isResetRequest ? 'is-active' : ''} type="button" role="tab" aria-selected={!isSignUp && !isResetRequest} onClick={() => onViewChange('sign-in')}>Sign in</button>
+            <button className={isSignUp ? 'is-active' : ''} type="button" role="tab" aria-selected={isSignUp} onClick={() => onViewChange('sign-up')}>Create account</button>
+          </div>}
+          <h2>{title}</h2>
+          <p className="account-card__lead">{lead}</p>
+          <form className="account-form" onSubmit={onSubmit}>
+            {isSignUp && <label htmlFor="account-name">Name<input id="account-name" name="name" autoComplete="name" value={formValues.name} onChange={onChange} required /></label>}
+            {!isResetPassword && <label htmlFor="account-email">Email<input id="account-email" name="email" type="email" autoComplete="email" value={formValues.email} onChange={onChange} required /></label>}
+            {!isResetRequest && <label htmlFor="account-password">{isResetPassword ? 'New password' : 'Password'}<input id="account-password" name="password" type="password" autoComplete={isResetPassword ? 'new-password' : isSignUp ? 'new-password' : 'current-password'} minLength="8" value={formValues.password} onChange={onChange} required /></label>}
+            {(isSignUp || isResetPassword) && <label htmlFor="account-password-confirm">Confirm password<input id="account-password-confirm" name="confirmPassword" type="password" autoComplete="new-password" minLength="8" value={formValues.confirmPassword} onChange={onChange} required /></label>}
+            {error && <p className="account-status account-status--error" role="alert">{error}</p>}
+            {message && <p className="account-status" role="status">{message}</p>}
+            <button className="button" type="submit" disabled={loading}>{loading ? 'Please wait...' : <>{submitLabel} <Icon name="arrow" size={18} /></>}</button>
+          </form>
+          {!isSignUp && !isResetRequest && !isResetPassword && <button className="account-text-button" type="button" onClick={() => onViewChange('reset-request')}>Forgot your password?</button>}
+          {(isResetRequest || isResetPassword) && <button className="account-text-button" type="button" onClick={() => onViewChange('sign-in')}>Back to sign in</button>}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+const pageNames = new Set(['home', 'about', 'menu', 'contact', 'account'])
 
 function getPageFromHash() {
   const page = window.location.hash.replace(/^#\/?/, '').toLowerCase()
@@ -154,6 +226,12 @@ function App() {
   const [subscribeStatus, setSubscribeStatus] = useState('idle')
   const [welcomeOpen, setWelcomeOpen] = useState(() => wasReloaded || getPageFromHash() === 'home')
   const [subscribeReached, setSubscribeReached] = useState(false)
+  const [session, setSession] = useState(null)
+  const [accountView, setAccountView] = useState('sign-in')
+  const [accountForm, setAccountForm] = useState({ name: '', email: '', password: '', confirmPassword: '' })
+  const [accountLoading, setAccountLoading] = useState(false)
+  const [accountMessage, setAccountMessage] = useState('')
+  const [accountError, setAccountError] = useState('')
   const slide = heroSlides[activeSlide]
 
   useEffect(() => {
@@ -161,6 +239,32 @@ function App() {
     window.history.replaceState(null, '', '#/home')
     window.scrollTo(0, 0)
   }, [wasReloaded])
+
+  useEffect(() => {
+    let active = true
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (active) setSession(data.session)
+    })
+
+    const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (!active) return
+      setSession(nextSession)
+      if (event === 'PASSWORD_RECOVERY') {
+        window.setTimeout(() => {
+          setAccountView('reset-password')
+          setAccountMessage('Choose a new password to finish resetting your account.')
+          setAccountError('')
+          window.location.hash = '#/account'
+        }, 0)
+      }
+    })
+
+    return () => {
+      active = false
+      listener.subscription.unsubscribe()
+    }
+  }, [])
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
@@ -302,6 +406,96 @@ function App() {
     setContactStatus('idle')
     setContactFormOpen(true)
   }
+  const openAccount = () => {
+    closeMenu()
+    setWelcomeOpen(false)
+    setAccountError('')
+    setAccountMessage('')
+    if (session) setAccountView('sign-in')
+  }
+  const changeAccountView = (nextView) => {
+    setAccountView(nextView)
+    setAccountError('')
+    setAccountMessage('')
+    setAccountForm((current) => ({ ...current, password: '', confirmPassword: '' }))
+  }
+  const updateAccountForm = (event) => {
+    setAccountForm((current) => ({ ...current, [event.target.name]: event.target.value }))
+    if (accountError) setAccountError('')
+    if (accountMessage) setAccountMessage('')
+  }
+  const submitAccountForm = async (event) => {
+    event.preventDefault()
+    const { name, email, password, confirmPassword } = accountForm
+    const cleanEmail = email.trim().toLowerCase()
+
+    if ((accountView === 'sign-up' || accountView === 'reset-password') && password !== confirmPassword) {
+      setAccountError('The passwords do not match. Please try again.')
+      return
+    }
+
+    setAccountLoading(true)
+    setAccountError('')
+    setAccountMessage('')
+
+    try {
+      if (accountView === 'sign-up') {
+        const { data, error } = await supabase.auth.signUp({
+          email: cleanEmail,
+          password,
+          options: {
+            data: { full_name: name.trim() },
+            emailRedirectTo: authRedirectUrl(),
+          },
+        })
+        if (error) throw error
+        setAccountForm({ name: '', email: cleanEmail, password: '', confirmPassword: '' })
+        if (data.session) {
+          setSession(data.session)
+          setAccountMessage('Your Bewraped account is ready.')
+        } else {
+          setAccountMessage('Check your email and confirm your address to finish creating your Bewraped account.')
+        }
+        return
+      }
+
+      if (accountView === 'reset-request') {
+        const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, { redirectTo: authRedirectUrl() })
+        if (error) throw error
+        setAccountMessage('If an account exists for this email, a secure password-reset link is on its way.')
+        return
+      }
+
+      if (accountView === 'reset-password') {
+        const { error } = await supabase.auth.updateUser({ password })
+        if (error) throw error
+        setAccountForm((current) => ({ ...current, password: '', confirmPassword: '' }))
+        setAccountView('sign-in')
+        setAccountMessage('Your password has been updated. You can now sign in.')
+        return
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password })
+      if (error) throw error
+      setSession(data.session)
+      setAccountForm((current) => ({ ...current, password: '', confirmPassword: '' }))
+    } catch (error) {
+      setAccountError(error.message || 'We could not complete that request. Please try again.')
+    } finally {
+      setAccountLoading(false)
+    }
+  }
+  const signOut = async () => {
+    setAccountLoading(true)
+    const { error } = await supabase.auth.signOut()
+    if (error) setAccountError(error.message || 'We could not sign you out. Please try again.')
+    else {
+      setSession(null)
+      setAccountView('sign-in')
+      setAccountMessage('You have been signed out safely.')
+    }
+    setAccountLoading(false)
+  }
   const closeContactForm = () => setContactFormOpen(false)
   const updateContactForm = (event) => setContactForm((current) => ({ ...current, [event.target.name]: event.target.value }))
   const submitContactForm = async (event) => {
@@ -361,11 +555,14 @@ function App() {
         <header className="site-header">
           <a className="brand" href="#/home" aria-label="Bewraped home" onClick={goHome}><BrandMark /></a>
           <button className="nav-toggle" aria-label="Toggle navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><Icon name={menuOpen ? 'close' : 'menu'} /></button>
-          <nav className={menuOpen ? 'site-nav is-open' : 'site-nav'} aria-label="Main navigation">
-            <a className={page === 'home' && !isAboutSection ? 'is-active' : undefined} href="#/home" aria-current={page === 'home' && !isAboutSection ? 'page' : undefined} onClick={goHome}>Home</a>
-            <a className={isAboutSection ? 'is-active' : undefined} href="#/home#about-details" aria-current={isAboutSection ? 'page' : undefined} onClick={goToAbout}>About</a>
-            <a className={page === 'menu' ? 'is-active' : undefined} href="#/menu" aria-current={page === 'menu' ? 'page' : undefined} onClick={closeMenu}>Menu</a>
-          </nav>
+          <div className="header-actions">
+            <nav className={menuOpen ? 'site-nav is-open' : 'site-nav'} aria-label="Main navigation">
+              <a className={page === 'home' && !isAboutSection ? 'is-active' : undefined} href="#/home" aria-current={page === 'home' && !isAboutSection ? 'page' : undefined} onClick={goHome}>Home</a>
+              <a className={isAboutSection ? 'is-active' : undefined} href="#/home#about-details" aria-current={isAboutSection ? 'page' : undefined} onClick={goToAbout}>About</a>
+              <a className={page === 'menu' ? 'is-active' : undefined} href="#/menu" aria-current={page === 'menu' ? 'page' : undefined} onClick={closeMenu}>Menu</a>
+            </nav>
+            <a className={page === 'account' ? 'account-link is-active' : 'account-link'} href="#/account" aria-label={session ? 'Open your Bewraped account' : 'Sign in or create a Bewraped account'} aria-current={page === 'account' ? 'page' : undefined} onClick={openAccount}><Icon name="user" size={22} /><span className="sr-only">Account</span></a>
+          </div>
         </header>
       </div>
 
@@ -410,6 +607,8 @@ function App() {
 
         {page === 'contact' && <section className="visit-section contact-page"><div className="visit-section__content"><p className="eyebrow">Say hello</p><h1>Ready when you are.</h1><p>Leave your name, contact number, and email. The Bewraped team will get back to you soon.</p><button className="button button--cream" type="button" onClick={openContactForm}>Get in touch <Icon name="arrow" size={18} /></button></div></section>}
 
+        {page === 'account' && <AccountPage session={session} view={accountView} formValues={accountForm} onChange={updateAccountForm} onSubmit={submitAccountForm} onViewChange={changeAccountView} onSignOut={signOut} loading={accountLoading} message={accountMessage} error={accountError} />}
+
         <section className="subscribe-band" id="subscribe" aria-labelledby="subscribe-title">
           <div className="subscribe-band__image" aria-hidden="true" />
           <div className="subscribe-band__doodles" aria-hidden="true">
@@ -431,7 +630,7 @@ function App() {
 
       <button className={`subscribe-jump${subscribeReached ? ' is-up' : ''}`} type="button" onClick={subscribeReached ? goToTop : goToSubscribe} aria-label={subscribeReached ? 'Scroll to top' : 'Scroll to subscribe'}><span>{subscribeReached ? 'Top' : 'Subscribe'}</span><Icon name="arrowDown" size={19} /></button>
 
-      <footer id="contact" className="site-footer"><div className="footer-brand"><a className="footer-brand__link" href="#/home" onClick={goHome}><img className="footer-sticker" src="./images/bewraped-icon-red.png" alt="Bewraped icon" /></a><p>Fresh bubble waffles and small-batch brews, made for your good moments.</p></div><div className="footer-links"><h2>Explore</h2><a href="#/home" onClick={goHome}>Home</a><a href="#/home#about-details" onClick={goToAbout}>About Bewraped</a><a href="#/menu">Menu</a><a href="#/contact">Contact</a></div><div className="footer-connect"><h2>Say hello</h2><a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a><span>{siteConfig.location}</span></div><div className="footer-socials"><h2>Social media</h2><div className="social-links"><SocialLink icon="instagram" label="Instagram" href={siteConfig.socialLinks.instagram} /><SocialLink icon="tiktok" label="TikTok" href={siteConfig.socialLinks.tiktok} /><SocialLink icon="linkedin" label="LinkedIn" href={siteConfig.socialLinks.linkedin} /><SocialLink icon="whatsapp" label="WhatsApp" href={siteConfig.socialLinks.whatsapp} /></div></div><div className="footer-note">Copyright {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
+      <footer id="contact" className="site-footer"><div className="footer-brand"><a className="footer-brand__link" href="#/home" onClick={goHome}><img className="footer-sticker" src="./images/bewraped-icon-red.png" alt="Bewraped icon" /></a><p>Fresh bubble waffles and small-batch brews, made for your good moments.</p></div><div className="footer-links"><h2>Explore</h2><a href="#/home" onClick={goHome}>Home</a><a href="#/home#about-details" onClick={goToAbout}>About Bewraped</a><a href="#/menu">Menu</a><a href="#/account" onClick={openAccount}>My account</a><a href="#/contact">Contact</a></div><div className="footer-connect"><h2>Say hello</h2><a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a><span>{siteConfig.location}</span></div><div className="footer-socials"><h2>Social media</h2><div className="social-links"><SocialLink icon="instagram" label="Instagram" href={siteConfig.socialLinks.instagram} /><SocialLink icon="tiktok" label="TikTok" href={siteConfig.socialLinks.tiktok} /><SocialLink icon="linkedin" label="LinkedIn" href={siteConfig.socialLinks.linkedin} /><SocialLink icon="whatsapp" label="WhatsApp" href={siteConfig.socialLinks.whatsapp} /></div></div><div className="footer-note">Copyright {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
       {page === 'home' && welcomeOpen && <WelcomeModal onClose={() => setWelcomeOpen(false)} onSubscribe={openSubscribeFromWelcome} />}
       {contactFormOpen && <ContactModal onClose={closeContactForm} formValues={contactForm} onChange={updateContactForm} onSubmit={submitContactForm} status={contactStatus} />}
     </>
