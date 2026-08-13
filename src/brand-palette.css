@@ -150,9 +150,23 @@ select {
   color: #000000;
 }
 
-.hero::before,
 .menu-card__image::after {
   display: none;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: min(58%, 760px);
+  display: block;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(241, 234, 220, .88) 0%, rgba(241, 234, 220, .7) 70%, rgba(241, 234, 220, .08) 100%);
+  -webkit-backdrop-filter: blur(11px);
+  backdrop-filter: blur(11px);
 }
 
 .hero::after {
@@ -700,6 +714,13 @@ select {
   .hero {
     min-height: max(530px, calc(100svh - 6.7rem));
     background-position: 64% center !important;
+  }
+
+  .hero::before {
+    width: 100%;
+    background: linear-gradient(90deg, rgba(241, 234, 220, .88) 0%, rgba(241, 234, 220, .66) 66%, rgba(241, 234, 220, .2) 100%);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
   }
 
   .hero::after {
