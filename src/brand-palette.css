@@ -184,7 +184,7 @@ body {
 }
 
 .why {
-  background: #F1EADC;
+  background: #FFFFFF;
   border-top: 2px solid #000000;
   border-bottom: 2px solid #000000;
 }
@@ -232,7 +232,7 @@ body {
 }
 
 .feedback-section {
-  background: #FFFFFF;
+  background: #F1EADC;
   color: #000000;
   text-align: center;
   overflow: hidden;
@@ -280,6 +280,7 @@ body {
   margin: 0 auto;
   padding: 3.75rem max(1.25rem, calc((100% - var(--max)) / 2 + 1.25rem)) 5.25rem;
   text-align: left;
+  background: #F1EADC;
 }
 
 .feedback-promise {
