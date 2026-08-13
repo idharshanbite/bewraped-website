@@ -155,18 +155,7 @@ select {
 }
 
 .hero::before {
-  content: '';
-  position: absolute;
-  z-index: 0;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: min(58%, 760px);
-  display: block;
-  pointer-events: none;
-  background: linear-gradient(90deg, rgba(241, 234, 220, .88) 0%, rgba(241, 234, 220, .7) 70%, rgba(241, 234, 220, .08) 100%);
-  -webkit-backdrop-filter: blur(11px);
-  backdrop-filter: blur(11px);
+  display: none;
 }
 
 .hero::after {
@@ -182,7 +171,35 @@ select {
   background: linear-gradient(to bottom, transparent 0%, #F1EADC 92%);
 }
 
-.hero__content,
+.hero__content {
+  position: relative;
+  z-index: 1;
+}
+
+.hero__content::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 4.4rem;
+  bottom: 4.7rem;
+  left: -1.25rem;
+  width: min(560px, 47vw);
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, .3);
+  border-radius: 0 2rem 2rem 0;
+  background: linear-gradient(110deg, rgba(255, 255, 255, .58) 0%, rgba(241, 234, 220, .44) 60%, rgba(241, 234, 220, .14) 100%);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .52), 0 16px 38px rgba(96, 32, 22, .08);
+  -webkit-backdrop-filter: blur(10px) saturate(1.08);
+  backdrop-filter: blur(10px) saturate(1.08);
+  -webkit-mask-image: linear-gradient(90deg, #000000 0%, #000000 68%, rgba(0, 0, 0, .7) 84%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000000 0%, #000000 68%, rgba(0, 0, 0, .7) 84%, transparent 100%);
+}
+
+.hero__content > * {
+  position: relative;
+  z-index: 1;
+}
+
 .hero__controls {
   z-index: 1;
 }
@@ -469,15 +486,15 @@ select {
 
 .welcome-modal {
   position: relative;
-  width: min(100%, 660px);
+  width: min(100%, 590px);
   max-height: calc(100dvh - 2rem);
   overflow: hidden;
   color: #000000;
   background: #FFFFFF;
   border: 3px solid #000000;
-  border-radius: 26px;
-  box-shadow: 10px 10px 0 #C8102E;
-  animation: welcome-modal-drop .72s cubic-bezier(.2, .85, .25, 1.08) both;
+  border-radius: 24px;
+  box-shadow: 8px 8px 0 #C8102E;
+  animation: welcome-modal-drop .9s cubic-bezier(.22, .75, .25, 1) both;
 }
 
 .welcome-modal__close {
@@ -506,21 +523,21 @@ select {
 
 .welcome-modal__visual {
   display: grid;
-  min-height: 230px;
+  min-height: 200px;
   place-items: center;
   padding: 1.25rem;
   background: #C8102E;
 }
 
 .welcome-modal__visual img {
-  width: min(40vw, 180px);
-  height: min(40vw, 180px);
+  width: min(36vw, 150px);
+  height: min(36vw, 150px);
   object-fit: contain;
   animation: welcome-icon-float 3.8s ease-in-out .6s infinite;
 }
 
 .welcome-modal__content {
-  padding: 2rem 2.4rem 2.35rem;
+  padding: 1.7rem 2.1rem 2rem;
   text-align: center;
   background: #FFFFFF;
 }
@@ -583,19 +600,19 @@ select {
 }
 
 .welcome-modal__content h2 {
-  max-width: 510px;
+  max-width: 465px;
   margin: 0 auto;
   font-family: 'Delight', 'DM Sans', sans-serif;
   color: #000000;
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(1.9rem, 3.6vw, 2.7rem);
   font-weight: 700;
   line-height: 1.05;
   letter-spacing: -.035em;
 }
 
 .welcome-modal__content > p:not(.eyebrow) {
-  max-width: 420px;
-  margin: .95rem auto 1.35rem;
+  max-width: 390px;
+  margin: .8rem auto 1.2rem;
   color: #000000;
   line-height: 1.55;
 }
@@ -617,8 +634,8 @@ select {
 }
 
 @keyframes welcome-modal-drop {
-  from { opacity: 0; transform: translate3d(0, -110vh, 0) scale(.88); }
-  65% { opacity: 1; transform: translate3d(0, 12px, 0) scale(1.015); }
+  from { opacity: 0; transform: translate3d(0, -100vh, 0) scale(.94); }
+  78% { opacity: 1; transform: translate3d(0, 7px, 0) scale(1.005); }
   to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }
 
@@ -717,10 +734,19 @@ select {
   }
 
   .hero::before {
-    width: 100%;
-    background: linear-gradient(90deg, rgba(241, 234, 220, .88) 0%, rgba(241, 234, 220, .66) 66%, rgba(241, 234, 220, .2) 100%);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
+    display: none;
+  }
+
+  .hero__content::before {
+    top: 2.7rem;
+    bottom: 4.5rem;
+    left: -.75rem;
+    width: min(355px, calc(100% + .75rem));
+    border-radius: 0 1.5rem 1.5rem 0;
+    background: linear-gradient(110deg, rgba(44, 0, 0, .34) 0%, rgba(86, 10, 16, .22) 62%, rgba(86, 10, 16, .04) 100%);
+    box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .16), 0 12px 28px rgba(42, 5, 9, .14);
+    -webkit-backdrop-filter: blur(8px) saturate(1.04);
+    backdrop-filter: blur(8px) saturate(1.04);
   }
 
   .hero::after {
