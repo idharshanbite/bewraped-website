@@ -28,6 +28,7 @@ function Icon({ name, size = 24 }) {
     tiktok: <path d="M14.4 3c.3 2.2 1.5 3.8 3.9 4.1v3.2c-1.4 0-2.7-.4-3.8-1.2v6.8c0 4.3-4.8 6.1-7.6 3.4-2.9-2.8-1.1-7.9 3-7.9.4 0 .7 0 1.1.1v3.2c-.4-.1-.8-.2-1.2-.1-1.5.3-2.1 2.2-1.2 3.4 1.3 1.7 4.3.6 4.3-1.7V3h2.5Z" fill="currentColor" stroke="none" />,
     linkedin: <><rect x="4" y="9" width="3.2" height="11" rx=".4" fill="currentColor" stroke="none" /><circle cx="5.6" cy="5.4" r="1.8" fill="currentColor" stroke="none" /><path d="M10 20V9h3v1.5c.7-1.1 1.8-1.8 3.5-1.8 2.8 0 3.5 1.9 3.5 4.4V20h-3.2v-6c0-1.4 0-2.6-1.6-2.6S13.3 12.6 13.3 14v6H10Z" fill="currentColor" stroke="none" /></>,
     whatsapp: <><path d="M20.3 11.7a8.2 8.2 0 0 1-12.1 7.2L3.7 20l1.2-4.3A8.2 8.2 0 1 1 20.3 11.7Z" /><path d="M8.5 7.8c.2-.5.4-.5.8-.5h.6c.2 0 .4 0 .5.4l.8 1.8c.1.3.1.5-.1.7l-.6.7c.5 1 1.2 1.8 2.2 2.3l.7-.7c.2-.2.4-.2.7-.1l1.7.8c.3.1.4.3.4.5v.6c0 .4-.2.7-.6.9-.4.2-1.1.4-2.1.1-1.1-.3-2.4-1.1-3.6-2.4-1.2-1.3-2-2.6-2.3-3.7-.3-1-.1-1.7.1-2.1Z" fill="currentColor" stroke="none" /></>,
+    quote: <path d="M8.8 10.2H5.1c.1-2.3 1-3.8 3.1-5L6.8 3.4C3.6 5.1 2.3 7.7 2.3 11.3c0 3.9 1.8 6.2 4.4 6.2 2.2 0 3.7-1.7 3.7-3.8 0-2-1.4-3.5-3.6-3.5Zm12.9 0H18c.1-2.3 1-3.8 3.1-5l-1.4-1.8c-3.2 1.7-4.5 4.3-4.5 7.9 0 3.9 1.8 6.2 4.4 6.2 2.2 0 3.7-1.7 3.7-3.8 0-2-1.4-3.5-3.6-3.5Z" />,
   }
   return <svg {...shared}>{paths[name]}</svg>
 }
@@ -59,6 +60,29 @@ function MenuCard({ item }) {
         </div>
       </div>
     </article>
+  )
+}
+
+function FeedbackLanding() {
+  const promises = [
+    { icon: 'waffle', title: 'Freshly made', copy: 'Warm waffles and small-batch brews, prepared with care.' },
+    { icon: 'gift', title: 'Little surprises', copy: 'New flavours, pop-ups, and sweet reasons to come back.' },
+    { icon: 'heart', title: 'Made to share', copy: 'Easy treats for catch-ups, celebrations, and everyday breaks.' },
+    { icon: 'sparkle', title: 'Your feedback', copy: 'Your thoughts help us make every next moment even better.' },
+  ]
+
+  return (
+    <section className="feedback-section" aria-labelledby="feedback-title">
+      <div className="feedback-section__quote">
+        <span className="feedback-section__quote-mark" aria-hidden="true"><Icon name="quote" size={48} /></span>
+        <p className="eyebrow eyebrow--red">Customer feedback</p>
+        <h2 id="feedback-title">Every good moment helps shape the next one.</h2>
+        <p>We are collecting the first Bewraped stories. Tell us what you lovedâ€”the waffle, the brew, or the people you shared it with.</p>
+      </div>
+      <div className="feedback-section__promises">
+        {promises.map((promise) => <article className="feedback-promise" key={promise.title}><span><Icon name={promise.icon} size={25} /></span><h3>{promise.title}</h3><p>{promise.copy}</p></article>)}
+      </div>
+    </section>
   )
 }
 
@@ -249,9 +273,9 @@ function App() {
           const bounds = card.getBoundingClientRect()
           const x = (event.clientX - bounds.left) / bounds.width - .5
           const y = (event.clientY - bounds.top) / bounds.height - .5
-          gsap.to(card, { rotateX: -y * 5, rotateY: x * 5, y: -5, duration: .35, ease: 'power2.out', overwrite: 'auto' })
+          gsap.to(card, { rotateX: -y * 2.5, rotateY: x * 2.5, y: -2, duration: .55, ease: 'power3.out', overwrite: 'auto' })
         }
-        const resetCard = () => gsap.to(card, { rotateX: 0, rotateY: 0, y: 0, duration: .45, ease: 'power3.out', overwrite: 'auto' })
+        const resetCard = () => gsap.to(card, { rotateX: 0, rotateY: 0, y: 0, duration: .65, ease: 'power3.out', overwrite: 'auto' })
         card.addEventListener('pointermove', tiltCard)
         card.addEventListener('pointerleave', resetCard)
         return () => {
@@ -403,6 +427,8 @@ function App() {
             <div className="section-heading section-heading--split"><div><p className="eyebrow eyebrow--red">Why Bewraped?</p><h2 id="why-title">Good mood food, wrapped up right.</h2></div><p>We keep the menu simple: fresh waffle batter, thoughtful toppings, and brews that make you want to stay a little longer.</p></div>
             <div className="reason-grid">{reasons.map((reason) => <article className="reason" key={reason.title}><span><Icon name={reason.icon} size={26} /></span><h3>{reason.title}</h3><p>{reason.copy}</p></article>)}</div>
           </section>
+
+          <FeedbackLanding />
 
         </>}
 
