@@ -414,6 +414,7 @@ select {
   border: 2px solid #000000;
   border-radius: 22px;
   background: #FFFFFF;
+  box-shadow: 4px 4px 0 #C8102E;
   transition: transform .22s cubic-bezier(.2, .7, .25, 1), box-shadow .22s cubic-bezier(.2, .7, .25, 1);
 }
 
@@ -1427,7 +1428,7 @@ select {
   }
 
   .shop-product:hover {
-    box-shadow: 4px 4px 0 #C8102E;
+    box-shadow: 6px 6px 0 #C8102E;
   }
 
   .shop-product:hover .shop-product__art svg,
