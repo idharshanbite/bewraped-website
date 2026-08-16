@@ -434,6 +434,10 @@ select {
   background: #F1EADC;
 }
 
+.shop-product__art--photo::before {
+  display: none;
+}
+
 .shop-product__photo {
   display: block;
   width: 100%;
