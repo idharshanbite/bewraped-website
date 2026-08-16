@@ -374,6 +374,215 @@ select {
   padding-top: .2rem;
 }
 
+.shop-page {
+  min-height: 590px;
+  padding-top: clamp(4.5rem, 8vw, 7rem);
+  padding-bottom: clamp(5rem, 9vw, 8rem);
+  background: #F1EADC;
+}
+
+.shop-page__intro {
+  width: min(100%, 790px);
+  margin: 0 auto clamp(2.4rem, 5vw, 4rem);
+  text-align: center;
+}
+
+.shop-page__intro h1 {
+  max-width: 720px;
+  margin: 0 auto;
+  font-family: 'Delight', 'DM Sans', sans-serif;
+  color: #C8102E;
+  font-size: clamp(3rem, 6vw, 5.35rem);
+  font-weight: 700;
+  line-height: .95;
+  letter-spacing: -.055em;
+}
+
+.shop-page__intro > p:last-child {
+  max-width: 540px;
+  margin: 1.1rem auto 0;
+  color: #000000;
+  line-height: 1.6;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1rem, 2vw, 1.6rem);
+  width: min(100%, 1100px);
+  margin: 0 auto;
+}
+
+.shop-product {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  overflow: hidden;
+  border: 2px solid #000000;
+  border-radius: 22px;
+  background: #FFFFFF;
+  transition: transform .35s ease, box-shadow .35s ease;
+}
+
+.shop-product:hover {
+  transform: translateY(-5px);
+  box-shadow: 7px 7px 0 #C8102E;
+}
+
+.shop-product__art {
+  position: relative;
+  z-index: 0;
+  display: grid;
+  min-height: 270px;
+  overflow: hidden;
+  place-items: center;
+  isolation: isolate;
+  background: #C8102E;
+  color: #F1EADC;
+}
+
+.shop-product__art::before {
+  position: absolute;
+  width: 185px;
+  height: 185px;
+  border: 2px solid #F1EADC;
+  border-radius: 50%;
+  content: '';
+  opacity: .68;
+  transform: translate(18px, -15px);
+}
+
+.shop-product__art-ring {
+  position: absolute;
+  bottom: -30px;
+  left: -2%;
+  width: 105%;
+  height: 65px;
+  border: 2px solid #F1EADC;
+  border-radius: 50%;
+  opacity: .6;
+}
+
+.shop-product__art svg {
+  position: relative;
+  z-index: 1;
+  width: 132px;
+  height: 132px;
+  filter: drop-shadow(3px 3px 0 #000000);
+  stroke-width: 1.35;
+}
+
+.shop-product__art img {
+  position: absolute;
+  z-index: 0;
+  top: 1rem;
+  right: 1rem;
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  opacity: .92;
+}
+
+.shop-product__art--tumbler {
+  background: #000000;
+  color: #F1EADC;
+}
+
+.shop-product__art--mug {
+  background: #F1EADC;
+  color: #C8102E;
+}
+
+.shop-product__art--mug::before,
+.shop-product__art--mug .shop-product__art-ring {
+  border-color: #C8102E;
+}
+
+.shop-product__art--mug svg {
+  filter: drop-shadow(3px 3px 0 #000000);
+}
+
+.shop-product__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 1.35rem 1.35rem 1.45rem;
+  color: #000000;
+}
+
+.shop-product__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: .5rem;
+  margin-bottom: .9rem;
+  color: #C8102E;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.shop-product__meta span:last-child {
+  color: #000000;
+}
+
+.shop-product__body h2 {
+  margin: 0;
+  font-family: 'Delight', 'DM Sans', sans-serif;
+  color: #000000;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -.05em;
+}
+
+.shop-product__body > p {
+  margin: .8rem 0 1.35rem;
+  line-height: 1.55;
+}
+
+.shop-product__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #000000;
+}
+
+.shop-product__bottom strong {
+  color: #C8102E;
+  font-size: .9rem;
+}
+
+.shop-product__enquire {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #000000;
+  cursor: pointer;
+  font: inherit;
+  font-size: .88rem;
+  font-weight: 800;
+}
+
+.shop-product__enquire:hover {
+  color: #C8102E;
+}
+
+.shop-page__note {
+  max-width: 600px;
+  margin: 2rem auto 0;
+  color: #000000;
+  font-size: .85rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
 .visit-section {
   background: url('/images/hero-drinks.jpg') center 70% / cover;
 }
@@ -906,6 +1115,10 @@ select {
   .section-heading {
     align-items: flex-start;
   }
+
+  .shop-product__art {
+    min-height: 220px;
+  }
 }
 
 .welcome-modal__content .eyebrow {
@@ -1049,6 +1262,31 @@ select {
   .account-link {
     width: 2.45rem;
     height: 2.45rem;
+  }
+
+  .shop-page {
+    padding: 4rem 1.1rem 4.75rem;
+  }
+
+  .shop-page__intro h1 {
+    font-size: clamp(2.65rem, 11.5vw, 3.4rem);
+  }
+
+  .shop-grid {
+    grid-template-columns: 1fr;
+    max-width: 390px;
+  }
+
+  .shop-product__art {
+    min-height: 235px;
+  }
+
+  .shop-product__body {
+    padding: 1.2rem;
+  }
+
+  .shop-page__note {
+    font-size: .8rem;
   }
 
   .hero {
