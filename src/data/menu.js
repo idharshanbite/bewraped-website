@@ -15,6 +15,8 @@ export const siteConfig = {
   },
   orderUrl: '#/contact',
   contactFormEndpoint: 'https://script.google.com/macros/s/AKfycbw1utTv1mj-bbqUqgSR6T85QvU1C59qn-BAjWfhbFRjxT8Ze0dOD0QrsAMEBoWS8GM/exec',
+  // Turn this back on after the custom domain and public account email setup are ready.
+  accountsEnabled: false,
 }
 
 export const heroSlides = [
@@ -130,3 +132,4 @@ export const menuSections = [
     ],
   },
 ]
+
