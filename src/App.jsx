@@ -24,6 +24,7 @@ function Icon({ name, size = 24 }) {
     arrow: <><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>,
     arrowLeft: <><path d="M19 12H5" /><path d="m11 18-6-6 6-6" /></>,
     arrowDown: <><path d="M12 4v16" /><path d="m6 14 6 6 6-6" /></>,
+    search: <><circle cx="10.8" cy="10.8" r="6.4" /><path d="m16 16 4.3 4.3" /></>,
     menu: <><path d="M4 7h16M4 12h16M4 17h16" /></>,
     close: <><path d="m6 6 12 12M18 6 6 18" /></>,
     user: <><circle cx="12" cy="8" r="3.2" /><path d="M5 20c.8-3.3 3.1-5 7-5s6.2 1.7 7 5" /></>,
@@ -99,6 +100,72 @@ function ShopProductCard({ product, onEnquire }) {
       </div>
     </article>
   )
+}
+
+const shopSearchHints = ['Search Bewraped Cap', 'Search Bewraped Tumbler', 'Search Bewraped Mug']
+
+function ShopSearch({ value, onChange, resultCount, className = '' }) {
+  const [hintIndex, setHintIndex] = useState(0)
+  const [typedHint, setTypedHint] = useState('')
+
+  useEffect(() => {
+    if (value.trim()) {
+      setTypedHint('')
+      return undefined
+    }
+
+    const hint = shopSearchHints[hintIndex]
+    let position = 0
+    let timer
+    setTypedHint('')
+
+    const typeNextCharacter = () => {
+      position += 1
+      setTypedHint(hint.slice(0, position))
+      timer = position < hint.length
+        ? window.setTimeout(typeNextCharacter, 42)
+        : window.setTimeout(() => setHintIndex((current) => (current + 1) % shopSearchHints.length), 1650)
+    }
+
+    timer = window.setTimeout(typeNextCharacter, 230)
+    return () => window.clearTimeout(timer)
+  }, [hintIndex, value])
+
+  return (
+    <div className={`shop-search ${className}`.trim()}>
+      <label className="sr-only" htmlFor="shop-search">Search Bewraped goods</label>
+      <div className="shop-search__field">
+        <Icon name="search" size={21} />
+        <input id="shop-search" type="search" value={value} onChange={(event) => onChange(event.target.value)} placeholder={typedHint} autoComplete="off" enterKeyHint="search" />
+        {value && <button className="shop-search__clear" type="button" onClick={() => onChange('')} aria-label="Clear product search"><Icon name="close" size={17} /></button>}
+      </div>
+      <p className="shop-search__status" role="status" aria-live="polite">{value ? `${resultCount} ${resultCount === 1 ? 'product' : 'products'} found` : 'Search the Bewraped collection'}</p>
+    </div>
+  )
+}
+
+function ShopSearchResults({ products, query, onOpenShop }) {
+  if (!query.trim()) return null
+
+  if (!products.length) {
+    return <section className="shop-search-results shop-search-results--empty" aria-live="polite">
+      <span className="shop-search-results__icon"><Icon name="search" size={25} /></span>
+      <h2>No Bewraped goods found.</h2>
+      <p>Try “Cap”, “Tumbler”, or “Mug”.</p>
+    </section>
+  }
+
+  return <section className="shop-search-results" aria-label="Matching Bewraped products" aria-live="polite">
+    <p className="shop-search-results__eyebrow">Matching products</p>
+    <div className="shop-search-results__grid">
+      {products.map((product) => <article className="shop-search-result" key={product.id}>
+        <span>{product.category}</span>
+        <h2>{product.name}</h2>
+        <p>{product.description}</p>
+        <button type="button" onClick={onOpenShop}>View in shop <Icon name="arrow" size={16} /></button>
+      </article>)}
+    </div>
+  </section>
 }
 
 function ContactModal({ onClose, formValues, onChange, onSubmit, status, product }) {
@@ -320,6 +387,7 @@ function App() {
   const [contactStatus, setContactStatus] = useState('idle')
   const [contactForm, setContactForm] = useState({ name: '', contact: '', email: '', message: '', website: '' })
   const [contactProduct, setContactProduct] = useState(null)
+  const [shopSearch, setShopSearch] = useState('')
   const [subscribeEmail, setSubscribeEmail] = useState('')
   const [subscribeStatus, setSubscribeStatus] = useState('idle')
   const [welcomeOpen, setWelcomeOpen] = useState(() => wasReloaded || getPageFromHash() === 'home')
@@ -337,6 +405,10 @@ function App() {
   const [verificationMessage, setVerificationMessage] = useState('')
   const [verificationError, setVerificationError] = useState('')
   const slide = heroSlides[activeSlide]
+  const normalizedShopSearch = shopSearch.trim().toLowerCase()
+  const filteredShopProducts = normalizedShopSearch
+    ? shopProducts.filter((product) => [product.name, product.category, product.description, product.label, product.id].join(' ').toLowerCase().includes(normalizedShopSearch))
+    : shopProducts
 
   useEffect(() => {
     if (!wasReloaded) return
@@ -490,6 +562,10 @@ function App() {
   const goToTop = () => {
     closeMenu()
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+  const openShopFromSearch = () => {
+    closeMenu()
+    window.location.hash = '#/shop'
   }
   const openSubscribeFromWelcome = () => {
     setWelcomeOpen(false)
@@ -747,6 +823,15 @@ function App() {
             </div>
           </section>
 
+          <section className="shop-search-home section" aria-labelledby="shop-search-home-title">
+            <div className="shop-search-home__intro">
+              <p className="eyebrow eyebrow--red">Find your Bewraped</p>
+              <h2 id="shop-search-home-title">Looking for something to take with you?</h2>
+            </div>
+            <ShopSearch className="shop-search--home" value={shopSearch} onChange={setShopSearch} resultCount={filteredShopProducts.length} />
+            <ShopSearchResults products={filteredShopProducts} query={shopSearch} onOpenShop={openShopFromSearch} />
+          </section>
+
           <section className="intro section" aria-labelledby="intro-title">
             <p className="eyebrow eyebrow--red">Your comfort order</p>
             <h2 id="intro-title">One little stop. A lot to love.</h2>
@@ -774,9 +859,11 @@ function App() {
             <h1 id="shop-title">Take a little Bewraped with you.</h1>
             <p>Small everyday pieces for coffee runs, treat stops, and the moments in between.</p>
           </div>
+          <ShopSearch className="shop-search--shop" value={shopSearch} onChange={setShopSearch} resultCount={filteredShopProducts.length} />
           <div className="shop-grid">
-            {shopProducts.map((product) => <ShopProductCard key={product.id} product={product} onEnquire={openContactForm} />)}
+            {filteredShopProducts.map((product) => <ShopProductCard key={product.id} product={product} onEnquire={openContactForm} />)}
           </div>
+          {normalizedShopSearch && filteredShopProducts.length === 0 && <ShopSearchResults products={filteredShopProducts} query={shopSearch} onOpenShop={openShopFromSearch} />}
           <p className="shop-page__note">Real product photos and final prices will be added here before the store opens.</p>
         </section>}
 
