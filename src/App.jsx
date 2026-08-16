@@ -715,7 +715,6 @@ function App() {
         <div className="announcement"><span>{siteConfig.announcement}</span></div>
         <header className="site-header">
           <a className="brand" href="#/home" aria-label="Bewraped home" onClick={goHome}><BrandMark /></a>
-          <button className="nav-toggle" aria-label="Toggle navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><Icon name={menuOpen ? 'close' : 'menu'} /></button>
           <div className="header-actions">
             <nav className={menuOpen ? 'site-nav is-open' : 'site-nav'} aria-label="Main navigation">
               <a className={page === 'home' && !isAboutSection ? 'is-active' : undefined} href="#/home" aria-current={page === 'home' && !isAboutSection ? 'page' : undefined} onClick={goHome}>Home</a>
@@ -724,6 +723,7 @@ function App() {
               <a className={page === 'shop' ? 'is-active' : undefined} href="#/shop" aria-current={page === 'shop' ? 'page' : undefined} onClick={closeMenu}>Shop</a>
               <a className={page === 'contact' ? 'is-active' : undefined} href="#/contact" aria-current={page === 'contact' ? 'page' : undefined} onClick={closeMenu}>Contact</a>
             </nav>
+            <button className="nav-toggle" aria-label="Toggle navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><Icon name={menuOpen ? 'close' : 'menu'} /></button>
             {siteConfig.accountsEnabled && <a className={page === 'account' ? 'account-link is-active' : 'account-link'} href="#/account" aria-label={session ? 'Open your Bewraped account' : 'Sign in or create a Bewraped account'} aria-current={page === 'account' ? 'page' : undefined} onClick={openAccount}><Icon name="user" size={22} /><span className="sr-only">Account</span></a>}
           </div>
         </header>
