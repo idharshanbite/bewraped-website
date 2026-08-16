@@ -19,7 +19,7 @@ function doPost(event) {
     const website = cleanText_(data.website, 200);
     const enquiryType = cleanText_(data.enquiryType, 100);
     const product = cleanText_(data.product, 120);
-    const message = cleanText_(data.message, 1200);
+    const message = cleanMessage_(data.message, 1200);
     const isNewsletter = enquiryType === 'newsletter subscription';
 
     // Normal visitors never see or fill this field. It stops simple bots.
@@ -57,6 +57,18 @@ function doPost(event) {
     GmailApp.sendEmail(BUSINESS_EMAIL, `New Bewraped ${isNewsletter ? 'subscription' : product ? `${product} enquiry` : 'contact enquiry'} from ${safeName}`, businessMessage, {
       name: BRAND_NAME,
       replyTo: email,
+      htmlBody: buildBusinessEmail_({
+        name: safeName,
+        email,
+        contact,
+        message,
+        enquiryFor,
+        enquiryType,
+        product,
+        source,
+        submittedAt,
+        isNewsletter,
+      }),
     });
 
     const thankYouMessage = isNewsletter ? [
@@ -108,6 +120,92 @@ function cacheKey_(email) {
 
 function cleanText_(value, limit) {
   return String(value || '').trim().replace(/[\r\n]+/g, ' ').slice(0, limit || 200);
+}
+
+function cleanMessage_(value, limit) {
+  return String(value || '')
+    .trim()
+    .replace(/\r\n?/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .slice(0, limit || 1200);
+}
+
+function buildBusinessEmail_(details) {
+  const email = escapeHtml_(details.email);
+  const phone = escapeHtml_(details.contact || 'Not provided');
+  const source = escapeHtml_(details.source || 'Bewraped website');
+  const safeSourceUrl = /^https?:\/\//i.test(details.source || '') ? escapeAttribute_(details.source) : '';
+  const submittedAt = formatSubmittedAt_(details.submittedAt);
+  const message = escapeHtml_(details.message || 'No additional message was provided.').replace(/\n/g, '<br>');
+  const productRow = details.product ? fieldRow_('Product', escapeHtml_(details.product)) : '';
+  const phoneRow = details.isNewsletter ? '' : fieldRow_('Phone', phone);
+  const sourceValue = safeSourceUrl
+    ? `<a href="${safeSourceUrl}" style="color:#C8102E;text-decoration:underline;word-break:break-all;">Open source page</a>`
+    : source;
+
+  return `
+    <div style="margin:0;padding:32px 16px;background:#F1EADC;font-family:Arial,Helvetica,sans-serif;color:#171717;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:640px;margin:0 auto;background:#FFFFFF;border:1px solid #E3DACA;">
+        <tr>
+          <td style="padding:26px 32px;background:#C8102E;color:#FFFFFF;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:1.8px;line-height:1.2;">BEWRAPED</div>
+            <div style="margin-top:8px;font-size:24px;font-weight:700;line-height:1.25;">New website enquiry</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:30px 32px 8px;">
+            <div style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#C8102E;">Customer details</div>
+            <div style="margin-top:14px;">
+              ${fieldRow_('Name', escapeHtml_(details.name))}
+              ${fieldRow_('Email', `<a href="mailto:${escapeAttribute_(details.email)}" style="color:#C8102E;text-decoration:underline;">${email}</a>`)}
+              ${phoneRow}
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 32px 8px;">
+            <div style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#C8102E;">Message</div>
+            <div style="margin-top:12px;padding:18px;background:#F1EADC;border-left:4px solid #C8102E;font-size:15px;line-height:1.65;">${message}</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px 32px 30px;">
+            <div style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#C8102E;">Enquiry details</div>
+            <div style="margin-top:14px;">
+              ${fieldRow_('Enquiry for', escapeHtml_(details.enquiryFor))}
+              ${fieldRow_('Enquiry type', escapeHtml_(details.enquiryType || 'General enquiry'))}
+              ${productRow}
+              ${fieldRow_('Source', sourceValue)}
+              ${fieldRow_('Submitted', escapeHtml_(submittedAt), true)}
+            </div>
+            <div style="margin-top:24px;">
+              <a href="mailto:${escapeAttribute_(details.email)}" style="display:inline-block;padding:12px 18px;background:#C8102E;color:#FFFFFF;text-decoration:none;font-size:14px;font-weight:700;">Reply to customer</a>
+            </div>
+          </td>
+        </tr>
+      </table>
+      <div style="max-width:640px;margin:14px auto 0;font-size:11px;line-height:1.5;color:#766F65;text-align:center;">Sent from the Bewraped website contact form.</div>
+    </div>`;
+}
+
+function fieldRow_(label, value, isLast) {
+  return `<div style="padding:14px 0;${isLast ? '' : 'border-bottom:1px solid #E7E1D8;'}"><div style="margin-bottom:5px;font-size:12px;font-weight:700;color:#3B3732;">${label}</div><div style="font-size:15px;line-height:1.45;color:#171717;">${value}</div></div>`;
+}
+
+function formatSubmittedAt_(value) {
+  const date = new Date(value || new Date());
+  if (isNaN(date.getTime())) return String(value || 'Not available');
+  return Utilities.formatDate(date, Session.getScriptTimeZone(), 'EEE, d MMM yyyy, h:mm a z');
+}
+
+function escapeHtml_(value) {
+  return String(value || '').replace(/[&<>"']/g, function(character) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character];
+  });
+}
+
+function escapeAttribute_(value) {
+  return escapeHtml_(value);
 }
 
 function isValidEmail_(email) {
