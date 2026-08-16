@@ -1384,7 +1384,8 @@ select {
 }
 
 .contact-modal__backdrop {
-  background: #000000;
+  /* Keep the page the customer was viewing visible behind the enquiry form. */
+  background: rgba(241, 234, 220, .12);
   backdrop-filter: none;
   overflow-y: auto;
   overscroll-behavior-y: contain;
