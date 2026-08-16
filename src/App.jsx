@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { categories, heroSlides, menuSections, reasons, shopProducts, siteConfig } from './data/menu'
-import { supabase, authRedirectUrl } from './supabaseClient'
 
 const HERO_BACKGROUND_IMAGE = './images/hero-drinks.jpg'
 const MENU_IMAGE = './images/hero-waffles.png'
+let authClientPromise
+
+function loadAuthClient() {
+  authClientPromise ??= import('./supabaseClient')
+  return authClientPromise
+}
 
 function Icon({ name, size = 24 }) {
   const shared = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }
@@ -75,7 +80,7 @@ function ShopProductCard({ product, onEnquire }) {
       <div className={`shop-product__art shop-product__art--${product.id}`} aria-hidden="true">
         <span className="shop-product__art-ring" />
         <Icon name={product.icon} size={132} />
-        <img src="./images/bewraped-icon-off-white.png" alt="" />
+        <img className={product.id === 'mug' ? 'shop-product__brand shop-product__brand--red' : 'shop-product__brand'} src={product.id === 'mug' ? './images/bewraped-icon-red.png' : './images/bewraped-icon-off-white.png'} alt="" />
       </div>
       <div className="shop-product__body">
         <div className="shop-product__meta"><span>{product.category}</span><span>{product.label}</span></div>
@@ -113,6 +118,7 @@ function ContactModal({ onClose, formValues, onChange, onSubmit, status, product
               <label htmlFor="contact-name">Name<input id="contact-name" name="name" autoComplete="name" value={formValues.name} onChange={onChange} required /></label>
               <label htmlFor="contact-number">Contact number<input id="contact-number" name="contact" type="tel" autoComplete="tel" value={formValues.contact} onChange={onChange} required /></label>
               <label htmlFor="contact-email">Email<input id="contact-email" name="email" type="email" autoComplete="email" value={formValues.email} onChange={onChange} required /></label>
+              <label htmlFor="contact-message">Message <span className="field-optional">(optional)</span><textarea id="contact-message" name="message" value={formValues.message} onChange={onChange} placeholder="Tell us a little more." /></label>
               <label className="form-trap" aria-hidden="true">Website<input name="website" tabIndex="-1" autoComplete="off" value={formValues.website} onChange={onChange} /></label>
               {status === 'configuration' && <p className="contact-form__notice" role="alert">The email connection is being set up. Please try again shortly.</p>}
               {status === 'error' && <p className="contact-form__notice" role="alert">We could not send your details. Please try again.</p>}
@@ -122,6 +128,51 @@ function ContactModal({ onClose, formValues, onChange, onSubmit, status, product
         )}
       </section>
     </div>
+  )
+}
+
+function ContactPage({ formValues, onChange, onSubmit, status }) {
+  const isSending = status === 'submitting'
+
+  return (
+    <section className="contact-page contact-page--enquiry" aria-labelledby="contact-page-title">
+      <div className="contact-page__doodles" aria-hidden="true">
+        <span className="contact-page__doodle contact-page__doodle--sparkle"><Icon name="sparkle" size={44} /></span>
+        <span className="contact-page__doodle contact-page__doodle--coffee"><Icon name="coffeeBean" size={64} /></span>
+        <span className="contact-page__doodle contact-page__doodle--gift"><Icon name="gift" size={56} /></span>
+      </div>
+      <div className="contact-page__inner">
+        <div className="contact-page__intro">
+          <p className="eyebrow">Start a conversation</p>
+          <h1 id="contact-page-title">We would love to hear from you.</h1>
+          <p>Questions about Bewraped, a product, or a future pop-up? Send an enquiry and the team will get back to you.</p>
+          <div className="contact-page__details">
+            <a href={`mailto:${siteConfig.email}`}><Icon name="mail" size={20} />{siteConfig.email}</a>
+            <span><Icon name="sparkle" size={20} />Every enquiry goes directly to the Bewraped inbox.</span>
+          </div>
+        </div>
+        <div className="contact-page__form-wrap">
+          {status === 'success' ? (
+            <div className="contact-page__success" role="status">
+              <span><Icon name="sparkle" size={32} /></span>
+              <h2>Thank you for your enquiry.</h2>
+              <p>Your message has been sent to the Bewraped team. We will get back to you as soon as possible.</p>
+            </div>
+          ) : (
+            <form className="contact-enquiry-form" onSubmit={onSubmit}>
+              <label htmlFor="enquiry-name">Name<input id="enquiry-name" name="name" autoComplete="name" value={formValues.name} onChange={onChange} required /></label>
+              <label htmlFor="enquiry-contact">Contact number<input id="enquiry-contact" name="contact" type="tel" autoComplete="tel" value={formValues.contact} onChange={onChange} required /></label>
+              <label htmlFor="enquiry-email">Email<input id="enquiry-email" name="email" type="email" autoComplete="email" value={formValues.email} onChange={onChange} required /></label>
+              <label htmlFor="enquiry-message">How can we help?<textarea id="enquiry-message" name="message" value={formValues.message} onChange={onChange} placeholder="Write your enquiry here." required /></label>
+              <label className="form-trap" aria-hidden="true">Website<input name="website" tabIndex="-1" autoComplete="off" value={formValues.website} onChange={onChange} /></label>
+              {status === 'configuration' && <p className="contact-form__notice" role="alert">The enquiry connection is being set up. Please try again shortly.</p>}
+              {status === 'error' && <p className="contact-form__notice" role="alert">We could not send your enquiry. Please try again.</p>}
+              <button className="button button--cream" type="submit" disabled={isSending}>{isSending ? 'Sending...' : 'Send enquiry'} <Icon name="arrow" size={18} /></button>
+            </form>
+          )}
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -253,7 +304,6 @@ function getPageFromHash() {
 }
 
 function App() {
-  const mainRef = useRef(null)
   const heroCopyRef = useRef(null)
   const wasReloaded = useRef(window.performance?.getEntriesByType('navigation').some((entry) => entry.type === 'reload')).current
   const [activeSlide, setActiveSlide] = useState(0)
@@ -262,7 +312,7 @@ function App() {
   const [activeSection, setActiveSection] = useState(() => !wasReloaded && window.location.hash.toLowerCase().includes('#about-details') ? 'about' : '')
   const [contactFormOpen, setContactFormOpen] = useState(false)
   const [contactStatus, setContactStatus] = useState('idle')
-  const [contactForm, setContactForm] = useState({ name: '', contact: '', email: '', website: '' })
+  const [contactForm, setContactForm] = useState({ name: '', contact: '', email: '', message: '', website: '' })
   const [contactProduct, setContactProduct] = useState(null)
   const [subscribeEmail, setSubscribeEmail] = useState('')
   const [subscribeStatus, setSubscribeStatus] = useState('idle')
@@ -289,43 +339,65 @@ function App() {
   }, [wasReloaded])
 
   useEffect(() => {
+    if (!siteConfig.accountsEnabled) return undefined
+
     let active = true
+    let unsubscribe
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (active) setSession(data.session)
-    })
-
-    const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
+    loadAuthClient().then(({ supabase }) => {
       if (!active) return
-      setSession(nextSession)
-      if (event === 'PASSWORD_RECOVERY') {
-        window.setTimeout(() => {
-          setAccountView('reset-password')
-          setAccountMessage('Choose a new password to finish resetting your account.')
-          setAccountError('')
-          window.location.hash = '#/account'
-        }, 0)
-      }
+      supabase.auth.getSession().then(({ data }) => {
+        if (active) setSession(data.session)
+      })
+
+      const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
+        if (!active) return
+        setSession(nextSession)
+        if (event === 'PASSWORD_RECOVERY') {
+          window.setTimeout(() => {
+            setAccountView('reset-password')
+            setAccountMessage('Choose a new password to finish resetting your account.')
+            setAccountError('')
+            window.location.hash = '#/account'
+          }, 0)
+        }
+      })
+      unsubscribe = () => listener.subscription.unsubscribe()
+    }).catch(() => {
+      if (active) setAccountError('The account service is temporarily unavailable.')
     })
 
     return () => {
       active = false
-      listener.subscription.unsubscribe()
+      unsubscribe?.()
     }
   }, [])
 
   useEffect(() => {
+    if (page !== 'home') return undefined
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
     const copyItems = heroCopyRef.current?.querySelectorAll('.hero-copy-motion')
     if (!copyItems?.length) return undefined
-    const animation = gsap.fromTo(copyItems, { autoAlpha: 0, x: -28 }, { autoAlpha: 1, x: 0, duration: .58, stagger: .11, ease: 'power3.out', clearProps: 'transform' })
+    const animation = gsap.fromTo(copyItems, { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: .42, stagger: .07, ease: 'power2.out', clearProps: 'transform' })
     return () => animation.kill()
-  }, [activeSlide])
+  }, [activeSlide, page])
 
   useEffect(() => {
-    const timer = window.setInterval(() => setActiveSlide((current) => (current + 1) % heroSlides.length), 2000)
-    return () => window.clearInterval(timer)
-  }, [])
+    if (page !== 'home') return undefined
+
+    let timer
+    const updateTimer = () => {
+      if (timer) window.clearInterval(timer)
+      if (!document.hidden) timer = window.setInterval(() => setActiveSlide((current) => (current + 1) % heroSlides.length), 2000)
+    }
+
+    updateTimer()
+    document.addEventListener('visibilitychange', updateTimer)
+    return () => {
+      if (timer) window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', updateTimer)
+    }
+  }, [page])
 
   useEffect(() => {
     if (!contactFormOpen) return undefined
@@ -347,25 +419,24 @@ function App() {
 
   useEffect(() => {
     const subscribeSection = document.getElementById('subscribe')
-    if (!subscribeSection) return undefined
+    if (!subscribeSection || !('IntersectionObserver' in window)) return undefined
 
-    const updateSubscribeJump = () => {
-      const triggerPoint = subscribeSection.offsetTop - window.innerHeight * .45
-      setSubscribeReached(window.scrollY >= triggerPoint)
-    }
+    const observer = new IntersectionObserver(([entry]) => {
+      const reached = entry.isIntersecting || entry.boundingClientRect.top < 0
+      setSubscribeReached((current) => current === reached ? current : reached)
+    }, { rootMargin: '0px 0px -45% 0px', threshold: 0 })
 
-    updateSubscribeJump()
-    window.addEventListener('scroll', updateSubscribeJump, { passive: true })
-    window.addEventListener('resize', updateSubscribeJump)
-    return () => {
-      window.removeEventListener('scroll', updateSubscribeJump)
-      window.removeEventListener('resize', updateSubscribeJump)
-    }
+    observer.observe(subscribeSection)
+    return () => observer.disconnect()
   }, [page])
 
   useEffect(() => {
     const updatePage = () => {
       const nextPage = getPageFromHash()
+      if (!siteConfig.accountsEnabled && nextPage === 'account') {
+        window.location.replace('#/home')
+        return
+      }
       if (nextPage === 'about') {
         window.location.replace('#/home#about-details')
         return
@@ -386,38 +457,6 @@ function App() {
       return
     }
     window.scrollTo(0, 0)
-  }, [page])
-
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce), (pointer: coarse)').matches) return undefined
-
-    const context = gsap.context(() => {
-      const sections = gsap.utils.toArray('main > section')
-      gsap.fromTo(sections, { autoAlpha: 0, y: 28 }, { autoAlpha: 1, y: 0, duration: .7, stagger: .1, ease: 'power3.out', clearProps: 'transform' })
-
-      const cards = gsap.utils.toArray('.category-card, .menu-card')
-      const removeListeners = cards.map((card) => {
-        const tiltCard = (event) => {
-          const bounds = card.getBoundingClientRect()
-          const x = (event.clientX - bounds.left) / bounds.width - .5
-          const y = (event.clientY - bounds.top) / bounds.height - .5
-          gsap.to(card, { rotateX: -y * 2.5, rotateY: x * 2.5, y: -2, duration: .55, ease: 'power3.out', overwrite: 'auto' })
-        }
-        const resetCard = () => gsap.to(card, { rotateX: 0, rotateY: 0, y: 0, duration: .65, ease: 'power3.out', overwrite: 'auto' })
-        card.addEventListener('pointermove', tiltCard)
-        card.addEventListener('pointerleave', resetCard)
-        return () => {
-          card.removeEventListener('pointermove', tiltCard)
-          card.removeEventListener('pointerleave', resetCard)
-        }
-      })
-
-      gsap.fromTo('.subscribe-doodle', { autoAlpha: 0, scale: .75, rotation: -8 }, { autoAlpha: 1, scale: 1, rotation: 0, duration: .65, stagger: .08, ease: 'back.out(1.5)', delay: .18 })
-
-      return () => removeListeners.forEach((remove) => remove())
-    }, mainRef)
-
-    return () => context.revert()
   }, [page])
 
   const selectSlide = (index) => setActiveSlide((index + heroSlides.length) % heroSlides.length)
@@ -456,6 +495,10 @@ function App() {
     setContactFormOpen(true)
   }
   const openAccount = () => {
+    if (!siteConfig.accountsEnabled) {
+      window.location.replace('#/home')
+      return
+    }
     closeMenu()
     setWelcomeOpen(false)
     setAccountError('')
@@ -490,6 +533,7 @@ function App() {
     setAccountMessage('')
 
     try {
+      const { supabase, authRedirectUrl } = await loadAuthClient()
       if (accountView === 'sign-up') {
         const { data, error } = await supabase.auth.signUp({
           email: cleanEmail,
@@ -555,6 +599,7 @@ function App() {
     setVerificationLoading(true)
     setVerificationError('')
     try {
+      const { supabase } = await loadAuthClient()
       const { data, error } = await supabase.auth.verifyOtp({ email: verificationEmail, token: verificationCode, type: 'email' })
       if (error) throw error
       if (data.session) setSession(data.session)
@@ -571,6 +616,7 @@ function App() {
     setVerificationLoading(true)
     setVerificationError('')
     try {
+      const { supabase, authRedirectUrl } = await loadAuthClient()
       const { error } = await supabase.auth.resend({ type: 'signup', email: verificationEmail, options: { emailRedirectTo: authRedirectUrl() } })
       if (error) throw error
       setVerificationCode('')
@@ -583,14 +629,18 @@ function App() {
   }
   const signOut = async () => {
     setAccountLoading(true)
-    const { error } = await supabase.auth.signOut()
-    if (error) setAccountError(error.message || 'We could not sign you out. Please try again.')
-    else {
+    try {
+      const { supabase } = await loadAuthClient()
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
       setSession(null)
       setAccountView('sign-in')
       setAccountMessage('You have been signed out safely.')
+    } catch (error) {
+      setAccountError(error.message || 'We could not sign you out. Please try again.')
+    } finally {
+      setAccountLoading(false)
     }
-    setAccountLoading(false)
   }
   const closeContactForm = () => {
     setContactFormOpen(false)
@@ -612,13 +662,19 @@ function App() {
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
           ...contactForm,
-          enquiryType: contactProduct ? `Shop enquiry: ${contactProduct.name}` : 'General enquiry',
+          contact: [
+            contactForm.contact,
+            contactProduct && `Product: ${contactProduct.name}`,
+            page === 'contact' && 'Submitted from Contact page',
+            contactForm.message && `Message: ${contactForm.message}`,
+          ].filter(Boolean).join(' — '),
+          enquiryType: contactProduct ? `Shop enquiry: ${contactProduct.name}` : page === 'contact' ? 'Contact page enquiry' : 'General enquiry',
           product: contactProduct?.name || '',
           source: window.location.href,
           submittedAt: new Date().toISOString(),
         }),
       })
-      setContactForm({ name: '', contact: '', email: '', website: '' })
+      setContactForm({ name: '', contact: '', email: '', message: '', website: '' })
       setContactStatus('success')
     } catch {
       setContactStatus('error')
@@ -666,13 +722,14 @@ function App() {
               <a className={isAboutSection ? 'is-active' : undefined} href="#/home#about-details" aria-current={isAboutSection ? 'page' : undefined} onClick={goToAbout}>About</a>
               <a className={page === 'menu' ? 'is-active' : undefined} href="#/menu" aria-current={page === 'menu' ? 'page' : undefined} onClick={closeMenu}>Menu</a>
               <a className={page === 'shop' ? 'is-active' : undefined} href="#/shop" aria-current={page === 'shop' ? 'page' : undefined} onClick={closeMenu}>Shop</a>
+              <a className={page === 'contact' ? 'is-active' : undefined} href="#/contact" aria-current={page === 'contact' ? 'page' : undefined} onClick={closeMenu}>Contact</a>
             </nav>
-            <a className={page === 'account' ? 'account-link is-active' : 'account-link'} href="#/account" aria-label={session ? 'Open your Bewraped account' : 'Sign in or create a Bewraped account'} aria-current={page === 'account' ? 'page' : undefined} onClick={openAccount}><Icon name="user" size={22} /><span className="sr-only">Account</span></a>
+            {siteConfig.accountsEnabled && <a className={page === 'account' ? 'account-link is-active' : 'account-link'} href="#/account" aria-label={session ? 'Open your Bewraped account' : 'Sign in or create a Bewraped account'} aria-current={page === 'account' ? 'page' : undefined} onClick={openAccount}><Icon name="user" size={22} /><span className="sr-only">Account</span></a>}
           </div>
         </header>
       </div>
 
-      <main id="main" ref={mainRef}>
+      <main id="main">
         {page === 'home' && <>
           <section className="hero" style={{ backgroundImage: `url(${HERO_BACKGROUND_IMAGE})` }}>
             <div className="hero__content" ref={heroCopyRef}>
@@ -723,9 +780,9 @@ function App() {
           <p className="shop-page__note">Real product photos and final prices will be added here before the store opens.</p>
         </section>}
 
-        {page === 'contact' && <section className="visit-section contact-page"><div className="visit-section__content"><p className="eyebrow">Say hello</p><h1>Ready when you are.</h1><p>Leave your name, contact number, and email. The Bewraped team will get back to you soon.</p><button className="button button--cream" type="button" onClick={openContactForm}>Get in touch <Icon name="arrow" size={18} /></button></div></section>}
+        {page === 'contact' && <ContactPage formValues={contactForm} onChange={updateContactForm} onSubmit={submitContactForm} status={contactStatus} />}
 
-        {page === 'account' && <AccountPage session={session} view={accountView} formValues={accountForm} onChange={updateAccountForm} onSubmit={submitAccountForm} onViewChange={changeAccountView} onSignOut={signOut} loading={accountLoading} message={accountMessage} error={accountError} verificationOpen={verificationOpen} verificationEmail={verificationEmail} verificationCode={verificationCode} verificationLoading={verificationLoading} verificationMessage={verificationMessage} verificationError={verificationError} onVerificationCodeChange={updateVerificationCode} onVerifyEmail={verifyAccountEmail} onResendVerification={resendVerificationCode} onCloseVerification={() => setVerificationOpen(false)} />}
+        {siteConfig.accountsEnabled && page === 'account' && <AccountPage session={session} view={accountView} formValues={accountForm} onChange={updateAccountForm} onSubmit={submitAccountForm} onViewChange={changeAccountView} onSignOut={signOut} loading={accountLoading} message={accountMessage} error={accountError} verificationOpen={verificationOpen} verificationEmail={verificationEmail} verificationCode={verificationCode} verificationLoading={verificationLoading} verificationMessage={verificationMessage} verificationError={verificationError} onVerificationCodeChange={updateVerificationCode} onVerifyEmail={verifyAccountEmail} onResendVerification={resendVerificationCode} onCloseVerification={() => setVerificationOpen(false)} />}
 
         <section className="subscribe-band" id="subscribe" aria-labelledby="subscribe-title">
           <div className="subscribe-band__image" aria-hidden="true" />
@@ -748,7 +805,7 @@ function App() {
 
       <button className={`subscribe-jump${subscribeReached ? ' is-up' : ''}`} type="button" onClick={subscribeReached ? goToTop : goToSubscribe} aria-label={subscribeReached ? 'Scroll to top' : 'Scroll to subscribe'}><span>{subscribeReached ? 'Top' : 'Subscribe'}</span><Icon name="arrowDown" size={19} /></button>
 
-      <footer id="contact" className="site-footer"><div className="footer-brand"><a className="footer-brand__link" href="#/home" onClick={goHome}><img className="footer-sticker" src="./images/bewraped-icon-red.png" alt="Bewraped icon" /></a><p>Fresh bubble waffles and small-batch brews, made for your good moments.</p></div><div className="footer-links"><h2>Explore</h2><a href="#/home" onClick={goHome}>Home</a><a href="#/home#about-details" onClick={goToAbout}>About Bewraped</a><a href="#/menu">Menu</a><a href="#/shop">Shop</a><a href="#/account" onClick={openAccount}>My account</a><a href="#/contact">Contact</a></div><div className="footer-connect"><h2>Say hello</h2><a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a><span>{siteConfig.location}</span></div><div className="footer-socials"><h2>Social media</h2><div className="social-links"><SocialLink icon="instagram" label="Instagram" href={siteConfig.socialLinks.instagram} /><SocialLink icon="tiktok" label="TikTok" href={siteConfig.socialLinks.tiktok} /><SocialLink icon="linkedin" label="LinkedIn" href={siteConfig.socialLinks.linkedin} /><SocialLink icon="whatsapp" label="WhatsApp" href={siteConfig.socialLinks.whatsapp} /></div></div><div className="footer-note">Copyright {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
+      <footer id="contact" className="site-footer"><div className="footer-brand"><a className="footer-brand__link" href="#/home" onClick={goHome}><img className="footer-sticker" src="./images/bewraped-icon-red.png" alt="Bewraped icon" /></a><p>Fresh bubble waffles and small-batch brews, made for your good moments.</p></div><div className="footer-links"><h2>Explore</h2><a href="#/home" onClick={goHome}>Home</a><a href="#/home#about-details" onClick={goToAbout}>About Bewraped</a><a href="#/menu">Menu</a><a href="#/shop">Shop</a>{siteConfig.accountsEnabled && <a href="#/account" onClick={openAccount}>My account</a>}<a href="#/contact">Contact</a></div><div className="footer-connect"><h2>Say hello</h2><a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a><span>{siteConfig.location}</span></div><div className="footer-socials"><h2>Social media</h2><div className="social-links"><SocialLink icon="instagram" label="Instagram" href={siteConfig.socialLinks.instagram} /><SocialLink icon="tiktok" label="TikTok" href={siteConfig.socialLinks.tiktok} /><SocialLink icon="linkedin" label="LinkedIn" href={siteConfig.socialLinks.linkedin} /><SocialLink icon="whatsapp" label="WhatsApp" href={siteConfig.socialLinks.whatsapp} /></div></div><div className="footer-note">Copyright {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
       {page === 'home' && welcomeOpen && <WelcomeModal onClose={() => setWelcomeOpen(false)} onSubscribe={openSubscribeFromWelcome} />}
       {contactFormOpen && <ContactModal onClose={closeContactForm} formValues={contactForm} onChange={updateContactForm} onSubmit={submitContactForm} status={contactStatus} product={contactProduct} />}
     </>
@@ -756,3 +813,4 @@ function App() {
 }
 
 export default App
+
