@@ -662,12 +662,6 @@ function App() {
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
           ...contactForm,
-          contact: [
-            contactForm.contact,
-            contactProduct && `Product: ${contactProduct.name}`,
-            page === 'contact' && 'Submitted from Contact page',
-            contactForm.message && `Message: ${contactForm.message}`,
-          ].filter(Boolean).join(' — '),
           enquiryType: contactProduct ? `Shop enquiry: ${contactProduct.name}` : page === 'contact' ? 'Contact page enquiry' : 'General enquiry',
           product: contactProduct?.name || '',
           source: window.location.href,
