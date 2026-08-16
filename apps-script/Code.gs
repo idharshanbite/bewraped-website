@@ -1,6 +1,9 @@
 const BUSINESS_EMAIL = 'bewraped.info@gmail.com';
 const BRAND_NAME = 'Bewraped';
-const COOLDOWN_SECONDS = 15 * 60;
+const ENQUIRIES_SHEET_ID = '1sY6xe2dHkiBJglpzjBpRziYyXwE7qbnBfAXxXgJ4_3A';
+const ENQUIRIES_SHEET_NAME = 'Enquiries';
+const SRI_LANKA_TIME_ZONE = 'Asia/Colombo';
+const COOLDOWN_SECONDS = 90;
 
 /**
  * Receives website enquiries and newsletter subscriptions. Deploy this project
@@ -26,11 +29,12 @@ function doPost(event) {
     if (website) throw new Error('Request rejected.');
     if (!isValidEmail_(email)) throw new Error('Please provide a valid email address.');
     if (!isNewsletter && (!name || !contact)) throw new Error('Please provide a name, contact number, and valid email address.');
-    if (isRateLimited_(email)) throw new Error('Please wait a few minutes before submitting again.');
+    const rateLimitContext = product || enquiryType || 'general';
+    if (isRateLimited_(email, rateLimitContext)) throw new Error('Please wait a moment before submitting the same enquiry again.');
 
     const safeName = name || 'Bewraped friend';
-    const source = cleanText_(data.source, 500) || 'Bewraped website';
-    const submittedAt = cleanText_(data.submittedAt, 80) || new Date().toISOString();
+    const receivedAt = new Date();
+    const receivedAtText = formatReceivedAt_(receivedAt);
     const enquiryFor = isNewsletter
       ? 'Newsletter subscription'
       : product
@@ -38,20 +42,19 @@ function doPost(event) {
         : enquiryType === 'Contact page enquiry'
           ? 'General contact enquiry'
           : 'General website enquiry';
+    const requestedItem = product || (isNewsletter ? 'Newsletter subscription' : 'General enquiry');
     const businessMessage = [
       `A new Bewraped enquiry was received.`,
       '',
-      `Enquiry for: ${enquiryFor}`,
+      `Requested item: ${requestedItem}`,
       `Enquiry type: ${enquiryType || 'General enquiry'}`,
-      `Product: ${product || 'Not a product enquiry'}`,
       '',
       `Customer name: ${safeName}`,
       `Customer contact: ${contact || 'Newsletter subscriber'}`,
       `Customer email: ${email}`,
       `Customer message: ${message || 'No additional message was provided.'}`,
       '',
-      `Submitted from: ${source}`,
-      `Submitted: ${submittedAt}`,
+      `Received at: ${receivedAtText}`,
     ].join('\n');
 
     GmailApp.sendEmail(BUSINESS_EMAIL, `New Bewraped ${isNewsletter ? 'subscription' : product ? `${product} enquiry` : 'contact enquiry'} from ${safeName}`, businessMessage, {
@@ -64,11 +67,20 @@ function doPost(event) {
         message,
         enquiryFor,
         enquiryType,
-        product,
-        source,
-        submittedAt,
+        requestedItem,
+        receivedAtText,
         isNewsletter,
       }),
+    });
+
+    appendEnquiryToSheet_({
+      receivedAt,
+      enquiryType: enquiryType || 'General enquiry',
+      requestedItem,
+      name: safeName,
+      email,
+      contact: contact || 'Newsletter subscriber',
+      message: message || 'No additional message was provided.',
     });
 
     const thankYouMessage = isNewsletter ? [
@@ -94,7 +106,7 @@ function doPost(event) {
       replyTo: BUSINESS_EMAIL,
     });
 
-    setRateLimit_(email);
+    setRateLimit_(email, rateLimitContext);
     return response_({ ok: true });
   } catch (error) {
     console.error(error);
@@ -106,16 +118,16 @@ function doGet() {
   return response_({ ok: true, service: 'Bewraped contact form' });
 }
 
-function isRateLimited_(email) {
-  return CacheService.getScriptCache().get(cacheKey_(email)) !== null;
+function isRateLimited_(email, context) {
+  return CacheService.getScriptCache().get(cacheKey_(email, context)) !== null;
 }
 
-function setRateLimit_(email) {
-  CacheService.getScriptCache().put(cacheKey_(email), '1', COOLDOWN_SECONDS);
+function setRateLimit_(email, context) {
+  CacheService.getScriptCache().put(cacheKey_(email, context), '1', COOLDOWN_SECONDS);
 }
 
-function cacheKey_(email) {
-  return `bewraped-form:${Utilities.base64EncodeWebSafe(email)}`;
+function cacheKey_(email, context) {
+  return `bewraped-form:v2:${Utilities.base64EncodeWebSafe(`${email}:${context}`)}`;
 }
 
 function cleanText_(value, limit) {
@@ -133,15 +145,8 @@ function cleanMessage_(value, limit) {
 function buildBusinessEmail_(details) {
   const email = escapeHtml_(details.email);
   const phone = escapeHtml_(details.contact || 'Not provided');
-  const source = escapeHtml_(details.source || 'Bewraped website');
-  const safeSourceUrl = /^https?:\/\//i.test(details.source || '') ? escapeAttribute_(details.source) : '';
-  const submittedAt = formatSubmittedAt_(details.submittedAt);
   const message = escapeHtml_(details.message || 'No additional message was provided.').replace(/\n/g, '<br>');
-  const productRow = details.product ? fieldRow_('Product', escapeHtml_(details.product)) : '';
   const phoneRow = details.isNewsletter ? '' : fieldRow_('Phone', phone);
-  const sourceValue = safeSourceUrl
-    ? `<a href="${safeSourceUrl}" style="color:#C8102E;text-decoration:underline;word-break:break-all;">Open source page</a>`
-    : source;
 
   return `
     <div style="margin:0;padding:32px 16px;background:#F1EADC;font-family:Arial,Helvetica,sans-serif;color:#171717;">
@@ -172,11 +177,9 @@ function buildBusinessEmail_(details) {
           <td style="padding:24px 32px 30px;">
             <div style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#C8102E;">Enquiry details</div>
             <div style="margin-top:14px;">
-              ${fieldRow_('Enquiry for', escapeHtml_(details.enquiryFor))}
+              ${fieldRow_('Requested item', escapeHtml_(details.requestedItem))}
               ${fieldRow_('Enquiry type', escapeHtml_(details.enquiryType || 'General enquiry'))}
-              ${productRow}
-              ${fieldRow_('Source', sourceValue)}
-              ${fieldRow_('Submitted', escapeHtml_(submittedAt), true)}
+              ${fieldRow_('Received at', escapeHtml_(details.receivedAtText), true)}
             </div>
             <div style="margin-top:24px;">
               <a href="mailto:${escapeAttribute_(details.email)}" style="display:inline-block;padding:12px 18px;background:#C8102E;color:#FFFFFF;text-decoration:none;font-size:14px;font-weight:700;">Reply to customer</a>
@@ -192,10 +195,35 @@ function fieldRow_(label, value, isLast) {
   return `<div style="padding:14px 0;${isLast ? '' : 'border-bottom:1px solid #E7E1D8;'}"><div style="margin-bottom:5px;font-size:12px;font-weight:700;color:#3B3732;">${label}</div><div style="font-size:15px;line-height:1.45;color:#171717;">${value}</div></div>`;
 }
 
-function formatSubmittedAt_(value) {
-  const date = new Date(value || new Date());
-  if (isNaN(date.getTime())) return String(value || 'Not available');
-  return Utilities.formatDate(date, Session.getScriptTimeZone(), 'EEE, d MMM yyyy, h:mm a z');
+function appendEnquiryToSheet_(details) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(5000);
+  try {
+    const spreadsheet = SpreadsheetApp.openById(ENQUIRIES_SHEET_ID);
+    const sheet = spreadsheet.getSheetByName(ENQUIRIES_SHEET_NAME);
+    if (!sheet) throw new Error(`Could not find the \"${ENQUIRIES_SHEET_NAME}\" sheet.`);
+
+    sheet.appendRow([
+      details.receivedAt,
+      details.enquiryType,
+      details.requestedItem,
+      details.name,
+      details.email,
+      details.contact,
+      details.message,
+    ]);
+
+    const row = sheet.getLastRow();
+    const entryRange = sheet.getRange(row, 1, 1, 7);
+    sheet.getRange(row, 1).setNumberFormat('yyyy-mm-dd HH:mm:ss');
+    entryRange.setVerticalAlignment('top').setWrap(true);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function formatReceivedAt_(date) {
+  return Utilities.formatDate(date, SRI_LANKA_TIME_ZONE, 'EEE, d MMM yyyy, h:mm:ss a z');
 }
 
 function escapeHtml_(value) {
