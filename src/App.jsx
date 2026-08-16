@@ -77,14 +77,20 @@ function MenuCard({ item }) {
 function ShopProductCard({ product, onEnquire }) {
   return (
     <article className="shop-product">
-      <div className={`shop-product__art shop-product__art--${product.id}`} aria-hidden="true">
-        <span className="shop-product__art-ring" />
-        <Icon name={product.icon} size={132} />
-        <img className={product.id === 'mug' ? 'shop-product__brand shop-product__brand--red' : 'shop-product__brand'} src={product.id === 'mug' ? './images/bewraped-icon-red.png' : './images/bewraped-icon-off-white.png'} alt="" />
+      <div className={`shop-product__art shop-product__art--${product.id}${product.image ? ' shop-product__art--photo' : ''}`}>
+        {product.image ? (
+          <img className="shop-product__photo" src={product.image} alt={`Red ${product.name}`} />
+        ) : (
+          <>
+            <span className="shop-product__art-ring" />
+            <Icon name={product.icon} size={132} />
+            <img className={product.id === 'mug' ? 'shop-product__brand shop-product__brand--red' : 'shop-product__brand'} src={product.id === 'mug' ? './images/bewraped-icon-red.png' : './images/bewraped-icon-off-white.png'} alt="" />
+          </>
+        )}
       </div>
       <div className="shop-product__body">
         <div className="shop-product__meta"><span>{product.category}</span><span>{product.label}</span></div>
-        <h2>{product.name}</h2>
+        <h2>{product.name.split(' ').map((word) => <span key={word}>{word}</span>)}</h2>
         <p>{product.description}</p>
         <div className="shop-product__bottom">
           <strong>{product.price}</strong>
