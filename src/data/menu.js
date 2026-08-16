@@ -85,6 +85,7 @@ export const shopProducts = [
     price: 'Price coming soon',
     icon: 'cap',
     label: 'New drop',
+    image: './images/bewraped-cap.webp',
   },
   {
     id: 'tumbler',
