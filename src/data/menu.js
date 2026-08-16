@@ -73,6 +73,37 @@ export const reasons = [
   { icon: 'heart', title: 'Made for your moments', copy: 'A comfort order for catch-ups, celebrations, and everything in between.' },
 ]
 
+// Add real product photos and final prices here when they are ready.
+export const shopProducts = [
+  {
+    id: 'cap',
+    name: 'Bewraped Cap',
+    category: 'Headwear',
+    description: 'An easy everyday cap for carrying a little Bewraped energy with you.',
+    price: 'Price coming soon',
+    icon: 'cap',
+    label: 'New drop',
+  },
+  {
+    id: 'tumbler',
+    name: 'Bewraped Tumbler',
+    category: 'Drinkware',
+    description: 'A reusable tumbler made for iced brews, busy days, and good moments.',
+    price: 'Price coming soon',
+    icon: 'tumbler',
+    label: 'Coming soon',
+  },
+  {
+    id: 'mug',
+    name: 'Bewraped Mug',
+    category: 'Drinkware',
+    description: 'A cosy, everyday mug for coffee breaks and slow, sweet mornings.',
+    price: 'Price coming soon',
+    icon: 'mug',
+    label: 'Coming soon',
+  },
+]
+
 export const menuSections = [
   {
     id: 'waffles',
