@@ -1162,6 +1162,9 @@ select {
 .contact-modal__backdrop {
   background: #000000;
   backdrop-filter: none;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .contact-modal {
@@ -1169,6 +1172,11 @@ select {
   color: #000000;
   border: 3px solid #000000;
   box-shadow: 8px 8px 0 #C8102E;
+  max-height: calc(100dvh - 2.5rem);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding-block: 1rem;
 }
 
 .contact-modal__close {
@@ -1507,6 +1515,22 @@ select {
   .account-link {
     width: 2.45rem;
     height: 2.45rem;
+  }
+
+  /* Keep every field and the submit button reachable on short phone screens. */
+  .contact-modal__backdrop {
+    align-items: start;
+    padding:
+      max(1rem, env(safe-area-inset-top))
+      max(1rem, env(safe-area-inset-right))
+      max(1rem, env(safe-area-inset-bottom))
+      max(1rem, env(safe-area-inset-left));
+  }
+
+  .contact-modal {
+    width: 100%;
+    max-height: calc(100dvh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    padding: 1.35rem 1.15rem 1.5rem;
   }
 
   .shop-page {
