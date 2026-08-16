@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
-import { categories, heroSlides, menuSections, reasons, siteConfig } from './data/menu'
+import { categories, heroSlides, menuSections, reasons, shopProducts, siteConfig } from './data/menu'
 import { supabase, authRedirectUrl } from './supabaseClient'
 
 const HERO_BACKGROUND_IMAGE = './images/hero-drinks.jpg'
@@ -24,6 +24,9 @@ function Icon({ name, size = 24 }) {
     user: <><circle cx="12" cy="8" r="3.2" /><path d="M5 20c.8-3.3 3.1-5 7-5s6.2 1.7 7 5" /></>,
     lock: <><rect x="4.5" y="10" width="15" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
     mail: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m4 7 8 6 8-6" /></>,
+    cap: <><path d="M4 12.5c0-4.7 3.5-7.5 8.1-7.5 4.3 0 7.2 2.4 7.9 6.4" /><path d="M4.2 12.5c1.9.7 4.5.3 6.8-1.1 2.4-1.4 4.7-1.9 9-1" /><path d="M4.2 12.5c-1.8.5-2.5 1.4-2.2 2.1.5 1.2 4.6 1.3 9.1.1" /><path d="M8 9.3c.9-.5 1.9-.8 3.1-.8" /></>,
+    tumbler: <><path d="M7 5h10l-1.3 15H8.3L7 5Z" /><path d="M6 5h12M10 2h4M12 2v3" /><path d="M9.5 10h5M9.8 14h4.4" /></>,
+    mug: <><path d="M5 7h11v11a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V7Z" /><path d="M16 10h1.7a2.3 2.3 0 0 1 0 4.6H16" /><path d="M9 3c-1 1.1-1 2.3 0 3.4M12 3c-1 1.1-1 2.3 0 3.4" /></>,
     coffeeBean: <><path d="M19.2 4.8c-4-3.9-10.4-2.1-13.3 2.2-2.9 4.4-1.5 10.6 2.7 12.6 4.1 2 9.4-.5 11.3-5 1.8-4.3 1.2-7.5-.7-9.7Z" /><path d="M7 17c2.2-3.3 4.9-6.5 8.9-9.3" /></>,
     bubbles: <><circle cx="7" cy="7" r="2.5" /><circle cx="16.5" cy="6.5" r="3.5" /><circle cx="14" cy="16" r="4.5" /><circle cx="5.5" cy="17.5" r="1.5" /></>,
     matcha: <><path d="M5 10h14l-1.2 9H6.2L5 10Z" /><path d="M4 10h16M9 6.5c1.7-2.6 4.3-3.3 6.6-2.8-.5 2.4-2.6 4.5-5.5 4.2" /><path d="M12 8.8c.1-1.6.9-3.1 2.1-4.3" /></>,
@@ -66,7 +69,28 @@ function MenuCard({ item }) {
   )
 }
 
-function ContactModal({ onClose, formValues, onChange, onSubmit, status }) {
+function ShopProductCard({ product, onEnquire }) {
+  return (
+    <article className="shop-product">
+      <div className={`shop-product__art shop-product__art--${product.id}`} aria-hidden="true">
+        <span className="shop-product__art-ring" />
+        <Icon name={product.icon} size={132} />
+        <img src="./images/bewraped-icon-off-white.png" alt="" />
+      </div>
+      <div className="shop-product__body">
+        <div className="shop-product__meta"><span>{product.category}</span><span>{product.label}</span></div>
+        <h2>{product.name}</h2>
+        <p>{product.description}</p>
+        <div className="shop-product__bottom">
+          <strong>{product.price}</strong>
+          <button className="shop-product__enquire" type="button" onClick={() => onEnquire(product)}>Enquire <Icon name="arrow" size={16} /></button>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function ContactModal({ onClose, formValues, onChange, onSubmit, status, product }) {
   const isSending = status === 'submitting'
 
   return (
@@ -82,9 +106,9 @@ function ContactModal({ onClose, formValues, onChange, onSubmit, status }) {
           </div>
         ) : (
           <>
-            <p className="eyebrow eyebrow--red">Get in touch</p>
-            <h2 id="contact-form-title">Let's make it sweet.</h2>
-            <p className="contact-modal__intro">Leave your details and we will get back to you soon.</p>
+            <p className="eyebrow eyebrow--red">{product ? 'Shop enquiry' : 'Get in touch'}</p>
+            <h2 id="contact-form-title">{product ? `Interested in the ${product.name}?` : "Let's make it sweet."}</h2>
+            <p className="contact-modal__intro">{product ? `Leave your details and Bewraped will get back to you about the ${product.name}.` : 'Leave your details and we will get back to you soon.'}</p>
             <form className="contact-form" onSubmit={onSubmit}>
               <label htmlFor="contact-name">Name<input id="contact-name" name="name" autoComplete="name" value={formValues.name} onChange={onChange} required /></label>
               <label htmlFor="contact-number">Contact number<input id="contact-number" name="contact" type="tel" autoComplete="tel" value={formValues.contact} onChange={onChange} required /></label>
@@ -92,7 +116,7 @@ function ContactModal({ onClose, formValues, onChange, onSubmit, status }) {
               <label className="form-trap" aria-hidden="true">Website<input name="website" tabIndex="-1" autoComplete="off" value={formValues.website} onChange={onChange} /></label>
               {status === 'configuration' && <p className="contact-form__notice" role="alert">The email connection is being set up. Please try again shortly.</p>}
               {status === 'error' && <p className="contact-form__notice" role="alert">We could not send your details. Please try again.</p>}
-              <button className="button" type="submit" disabled={isSending}>{isSending ? 'Sending...' : 'Send my details'} <Icon name="arrow" size={18} /></button>
+              <button className="button" type="submit" disabled={isSending}>{isSending ? 'Sending...' : product ? 'Send my enquiry' : 'Send my details'} <Icon name="arrow" size={18} /></button>
             </form>
           </>
         )}
@@ -221,7 +245,7 @@ function AccountPage({ session, view, formValues, onChange, onSubmit, onViewChan
   )
 }
 
-const pageNames = new Set(['home', 'about', 'menu', 'contact', 'account'])
+const pageNames = new Set(['home', 'about', 'menu', 'shop', 'contact', 'account'])
 
 function getPageFromHash() {
   const page = window.location.hash.replace(/^#\/?/, '').toLowerCase()
@@ -239,6 +263,7 @@ function App() {
   const [contactFormOpen, setContactFormOpen] = useState(false)
   const [contactStatus, setContactStatus] = useState('idle')
   const [contactForm, setContactForm] = useState({ name: '', contact: '', email: '', website: '' })
+  const [contactProduct, setContactProduct] = useState(null)
   const [subscribeEmail, setSubscribeEmail] = useState('')
   const [subscribeStatus, setSubscribeStatus] = useState('idle')
   const [welcomeOpen, setWelcomeOpen] = useState(() => wasReloaded || getPageFromHash() === 'home')
@@ -425,8 +450,9 @@ function App() {
     setWelcomeOpen(false)
     window.requestAnimationFrame(goToSubscribe)
   }
-  const openContactForm = () => {
+  const openContactForm = (product = null) => {
     setContactStatus('idle')
+    setContactProduct(product)
     setContactFormOpen(true)
   }
   const openAccount = () => {
@@ -566,7 +592,10 @@ function App() {
     }
     setAccountLoading(false)
   }
-  const closeContactForm = () => setContactFormOpen(false)
+  const closeContactForm = () => {
+    setContactFormOpen(false)
+    setContactProduct(null)
+  }
   const updateContactForm = (event) => setContactForm((current) => ({ ...current, [event.target.name]: event.target.value }))
   const submitContactForm = async (event) => {
     event.preventDefault()
@@ -581,7 +610,13 @@ function App() {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ ...contactForm, source: window.location.href, submittedAt: new Date().toISOString() }),
+        body: JSON.stringify({
+          ...contactForm,
+          enquiryType: contactProduct ? `Shop enquiry: ${contactProduct.name}` : 'General enquiry',
+          product: contactProduct?.name || '',
+          source: window.location.href,
+          submittedAt: new Date().toISOString(),
+        }),
       })
       setContactForm({ name: '', contact: '', email: '', website: '' })
       setContactStatus('success')
@@ -630,6 +665,7 @@ function App() {
               <a className={page === 'home' && !isAboutSection ? 'is-active' : undefined} href="#/home" aria-current={page === 'home' && !isAboutSection ? 'page' : undefined} onClick={goHome}>Home</a>
               <a className={isAboutSection ? 'is-active' : undefined} href="#/home#about-details" aria-current={isAboutSection ? 'page' : undefined} onClick={goToAbout}>About</a>
               <a className={page === 'menu' ? 'is-active' : undefined} href="#/menu" aria-current={page === 'menu' ? 'page' : undefined} onClick={closeMenu}>Menu</a>
+              <a className={page === 'shop' ? 'is-active' : undefined} href="#/shop" aria-current={page === 'shop' ? 'page' : undefined} onClick={closeMenu}>Shop</a>
             </nav>
             <a className={page === 'account' ? 'account-link is-active' : 'account-link'} href="#/account" aria-label={session ? 'Open your Bewraped account' : 'Sign in or create a Bewraped account'} aria-current={page === 'account' ? 'page' : undefined} onClick={openAccount}><Icon name="user" size={22} /><span className="sr-only">Account</span></a>
           </div>
@@ -675,6 +711,18 @@ function App() {
           {menuSections.map((section) => <div className="menu-group" id={section.id} key={section.id}><div className="section-heading"><div><p className="eyebrow eyebrow--red">{section.eyebrow}</p><h2>{section.title}</h2></div><p>{section.description}</p></div><div className="menu-grid">{section.items.map((item) => <MenuCard item={item} key={item.name} />)}</div></div>)}
         </section>}
 
+        {page === 'shop' && <section className="shop-page section" aria-labelledby="shop-title">
+          <div className="shop-page__intro">
+            <p className="eyebrow eyebrow--red">Bewraped goods</p>
+            <h1 id="shop-title">Take a little Bewraped with you.</h1>
+            <p>Small everyday pieces for coffee runs, treat stops, and the moments in between.</p>
+          </div>
+          <div className="shop-grid">
+            {shopProducts.map((product) => <ShopProductCard key={product.id} product={product} onEnquire={openContactForm} />)}
+          </div>
+          <p className="shop-page__note">Real product photos and final prices will be added here before the store opens.</p>
+        </section>}
+
         {page === 'contact' && <section className="visit-section contact-page"><div className="visit-section__content"><p className="eyebrow">Say hello</p><h1>Ready when you are.</h1><p>Leave your name, contact number, and email. The Bewraped team will get back to you soon.</p><button className="button button--cream" type="button" onClick={openContactForm}>Get in touch <Icon name="arrow" size={18} /></button></div></section>}
 
         {page === 'account' && <AccountPage session={session} view={accountView} formValues={accountForm} onChange={updateAccountForm} onSubmit={submitAccountForm} onViewChange={changeAccountView} onSignOut={signOut} loading={accountLoading} message={accountMessage} error={accountError} verificationOpen={verificationOpen} verificationEmail={verificationEmail} verificationCode={verificationCode} verificationLoading={verificationLoading} verificationMessage={verificationMessage} verificationError={verificationError} onVerificationCodeChange={updateVerificationCode} onVerifyEmail={verifyAccountEmail} onResendVerification={resendVerificationCode} onCloseVerification={() => setVerificationOpen(false)} />}
@@ -700,9 +748,9 @@ function App() {
 
       <button className={`subscribe-jump${subscribeReached ? ' is-up' : ''}`} type="button" onClick={subscribeReached ? goToTop : goToSubscribe} aria-label={subscribeReached ? 'Scroll to top' : 'Scroll to subscribe'}><span>{subscribeReached ? 'Top' : 'Subscribe'}</span><Icon name="arrowDown" size={19} /></button>
 
-      <footer id="contact" className="site-footer"><div className="footer-brand"><a className="footer-brand__link" href="#/home" onClick={goHome}><img className="footer-sticker" src="./images/bewraped-icon-red.png" alt="Bewraped icon" /></a><p>Fresh bubble waffles and small-batch brews, made for your good moments.</p></div><div className="footer-links"><h2>Explore</h2><a href="#/home" onClick={goHome}>Home</a><a href="#/home#about-details" onClick={goToAbout}>About Bewraped</a><a href="#/menu">Menu</a><a href="#/account" onClick={openAccount}>My account</a><a href="#/contact">Contact</a></div><div className="footer-connect"><h2>Say hello</h2><a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a><span>{siteConfig.location}</span></div><div className="footer-socials"><h2>Social media</h2><div className="social-links"><SocialLink icon="instagram" label="Instagram" href={siteConfig.socialLinks.instagram} /><SocialLink icon="tiktok" label="TikTok" href={siteConfig.socialLinks.tiktok} /><SocialLink icon="linkedin" label="LinkedIn" href={siteConfig.socialLinks.linkedin} /><SocialLink icon="whatsapp" label="WhatsApp" href={siteConfig.socialLinks.whatsapp} /></div></div><div className="footer-note">Copyright {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
+      <footer id="contact" className="site-footer"><div className="footer-brand"><a className="footer-brand__link" href="#/home" onClick={goHome}><img className="footer-sticker" src="./images/bewraped-icon-red.png" alt="Bewraped icon" /></a><p>Fresh bubble waffles and small-batch brews, made for your good moments.</p></div><div className="footer-links"><h2>Explore</h2><a href="#/home" onClick={goHome}>Home</a><a href="#/home#about-details" onClick={goToAbout}>About Bewraped</a><a href="#/menu">Menu</a><a href="#/shop">Shop</a><a href="#/account" onClick={openAccount}>My account</a><a href="#/contact">Contact</a></div><div className="footer-connect"><h2>Say hello</h2><a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a><span>{siteConfig.location}</span></div><div className="footer-socials"><h2>Social media</h2><div className="social-links"><SocialLink icon="instagram" label="Instagram" href={siteConfig.socialLinks.instagram} /><SocialLink icon="tiktok" label="TikTok" href={siteConfig.socialLinks.tiktok} /><SocialLink icon="linkedin" label="LinkedIn" href={siteConfig.socialLinks.linkedin} /><SocialLink icon="whatsapp" label="WhatsApp" href={siteConfig.socialLinks.whatsapp} /></div></div><div className="footer-note">Copyright {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.</div></footer>
       {page === 'home' && welcomeOpen && <WelcomeModal onClose={() => setWelcomeOpen(false)} onSubscribe={openSubscribeFromWelcome} />}
-      {contactFormOpen && <ContactModal onClose={closeContactForm} formValues={contactForm} onChange={updateContactForm} onSubmit={submitContactForm} status={contactStatus} />}
+      {contactFormOpen && <ContactModal onClose={closeContactForm} formValues={contactForm} onChange={updateContactForm} onSubmit={submitContactForm} status={contactStatus} product={contactProduct} />}
     </>
   )
 }
